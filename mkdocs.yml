@@ -4,7 +4,7 @@ theme:
 
 markdown_extensions:
   - pymdownx.superfences
-  - pymdownx.plantuml:
+  - plantuml_markdown:
       server: https://www.plantuml.com/plantuml
 
 nav:

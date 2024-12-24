@@ -25,6 +25,7 @@ jobs:
       run: |
         pip install mkdocs-material
         pip install pymdown-extensions
+        pip install plantuml-markdown
 
     # Step 4: 构建并部署 MkDocs
     - name: Build and Deploy
