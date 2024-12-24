@@ -39,24 +39,25 @@ jobs:
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-    # Step 5: 检查分支状态
-    - name: Check branches
+    # Step 5: 构建站点（分开构建和部署步骤）
+    - name: Build site
       run: |
-        echo "Current branch:"
-        git branch --show-current
-        echo "All branches:"
-        git branch -a
+        mkdocs build --verbose
+        echo "Built site contents:"
+        ls -la site/
 
-    # Step 6: 构建并部署 MkDocs（添加详细日志）
-    - name: Build and Deploy
+    # Step 6: 部署到 gh-pages
+    - name: Deploy to GitHub Pages
       run: |
+        git fetch origin gh-pages
         mkdocs gh-deploy --force --verbose
-
+        
     # Step 7: 验证部署
     - name: Verify deployment
       run: |
         echo "Checking gh-pages branch..."
         git checkout gh-pages
+        echo "Current directory structure:"
         ls -la
-        echo "Current directory content:"
-        pwd
+        echo "Index file contents:"
+        cat index.html || echo "index.html not found"

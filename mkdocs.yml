@@ -1,5 +1,8 @@
 site_name: 我的博客
 site_url: https://wanghaolong.github.io
+site_description: PlantUML 博客
+repo_url: https://github.com/wanghaolong/wanghaolong.github.io
+
 theme:
   name: material
 
