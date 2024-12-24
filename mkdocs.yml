@@ -1,4 +1,5 @@
 site_name: 我的博客
+site_url: https://wanghaolong.github.io
 theme:
   name: material
 
@@ -9,3 +10,4 @@ markdown_extensions:
 
 nav:
   - 首页: index.md
+  - PlantUML分享: PlantUML分享/PlantUML分享.md
