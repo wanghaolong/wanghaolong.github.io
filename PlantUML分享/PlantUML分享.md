@@ -358,6 +358,8 @@ endif
 
 ## 5. 总结优势
 
+
+
 **PlantUML 的主要优势**：
 1. **高效**：通过简单的文本描述快速生成图表，节省时间。
 2. **灵活**：支持多种 UML 图表，满足多种设计需求。
@@ -366,3 +368,5 @@ endif
 5. **结合 AI 提升效率**：与 ChatGPT 和 Copilot 配合使用，可以快速生成所需的图表代码。
 
 PlantUML 是一个强大且灵活的工具，非常适合程序员在设计、开发和文档编写中使用！
+
+image::http://www.plantuml.com/plantuml/proxy?cache=no&src=https://wanghaolong.github.io/PlantUML%E5%88%86%E4%BA%AB/test.puml[]
