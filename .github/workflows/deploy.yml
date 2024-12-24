@@ -5,6 +5,10 @@ on:
     branches:
       - main  # 在推送到 main 分支时触发部署
 
+# 设置 GITHUB_TOKEN 的权限
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -13,6 +17,8 @@ jobs:
     # Step 1: 检出代码
     - name: Checkout repository
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
     # Step 2: 设置 Python 环境
     - name: Setup Python
@@ -27,7 +33,13 @@ jobs:
         pip install pymdown-extensions
         pip install plantuml-markdown
 
-    # Step 4: 构建并部署 MkDocs
+    # Step 4: 配置 Git
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    # Step 5: 构建并部署 MkDocs
     - name: Build and Deploy
       run: |
         mkdocs gh-deploy --force
