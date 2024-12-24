@@ -1,27 +1,32 @@
-name: Deploy MkDocs
+name: Deploy MkDocs with PlantUML
 
 on:
   push:
     branches:
-      - main
+      - main  # 在推送到 main 分支时触发部署
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Checkout code
+    # Step 1: 检出代码
+    - name: Checkout repository
       uses: actions/checkout@v2
 
+    # Step 2: 设置 Python 环境
     - name: Setup Python
       uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
+        python-version: 3.x
 
-    - name: Install MkDocs
+    # Step 3: 安装 MkDocs 和扩展插件
+    - name: Install dependencies
       run: |
-        pip install mkdocs
         pip install mkdocs-material
+        pip install pymdown-extensions
 
+    # Step 4: 构建并部署 MkDocs
     - name: Build and Deploy
       run: |
         mkdocs gh-deploy --force
