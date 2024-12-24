@@ -3,61 +3,50 @@ name: Deploy MkDocs with PlantUML
 on:
   push:
     branches:
-      - main  # 在推送到 main 分支时触发部署
+      - main
 
-# 设置 GITHUB_TOKEN 的权限
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
-
     steps:
-    # Step 1: 检出代码
-    - name: Checkout repository
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    # Step 2: 设置 Python 环境
-    - name: Setup Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.x
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
 
-    # Step 3: 安装 MkDocs 和扩展插件
-    - name: Install dependencies
-      run: |
-        pip install mkdocs-material
-        pip install pymdown-extensions
-        pip install plantuml-markdown
+      - name: Install dependencies
+        run: |
+          pip install mkdocs-material
+          pip install pymdown-extensions
+          pip install plantuml-markdown
 
-    # Step 4: 配置 Git
-    - name: Configure Git
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
 
-    # Step 5: 构建站点（分开构建和部署步骤）
-    - name: Build site
-      run: |
-        mkdocs build --verbose
-        echo "Built site contents:"
-        ls -la site/
+      - name: Build
+        run: |
+          mkdocs build --verbose --site-dir site --config-file mkdocs.yml
+          echo "Build directory contents:"
+          ls -la site/
 
-    # Step 6: 部署到 gh-pages
-    - name: Deploy to GitHub Pages
-      run: |
-        git fetch origin gh-pages
-        mkdocs gh-deploy --force --verbose
-        
-    # Step 7: 验证部署
-    - name: Verify deployment
-      run: |
-        echo "Checking gh-pages branch..."
-        git checkout gh-pages
-        echo "Current directory structure:"
-        ls -la
-        echo "Index file contents:"
-        cat index.html || echo "index.html not found"
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: 'site'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
