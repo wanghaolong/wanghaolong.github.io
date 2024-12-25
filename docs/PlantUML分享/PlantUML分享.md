@@ -56,7 +56,7 @@
 4. 安装完成后，重启 IDEA。
 
 #### 步骤 4：在IntelliJ IDEA中，配置 PlantUML 插件
-![alt text](image.png){width=60%}
+![alt text](image.png)
 
 
 #### 步骤 5：在IntelliJ IDEA中，创建并运行 PlantUML 文件
@@ -77,7 +77,7 @@
 ### 3.1 时序图
 
 #### 3.1.1 多系统对接时，通过plantUML快速生成时序图，提高沟通效率
-![alt text](image-3.png){width=40%}
+![alt text](image-3.png)
 具体代码如下：
 ```plantuml
 @startuml
@@ -369,4 +369,3 @@ endif
 
 PlantUML 是一个强大且灵活的工具，非常适合程序员在设计、开发和文档编写中使用！
 
-image::http://www.plantuml.com/plantuml/proxy?cache=no&src=https://wanghaolong.github.io/PlantUML%E5%88%86%E4%BA%AB/test.puml[]
