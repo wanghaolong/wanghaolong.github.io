@@ -1,0 +1,28 @@
+=== Content of image-37.png ===
+综合搜索推荐的召回功能进行抽象,整体划分为三个阶段: 依次为召回前、召回中、召回后;
+
+4.1.召回前
+召回前,主要涉及 基于NLP的意图识别、基于用户画像和策略的请求改写等功能,我们参照业内其他公司的设计,定义
+了 意图解析模块(上方),画像解析模块,策略调权模块
+用户画像模决
+相关设计不做疯述,这里只介绍贝壳对于的标签调权
+
+1       "rent_period_max": {
+2         "FieldName": "maxLease",
+3          "size": 2,
+4         "name": "rent_period",
+5         "acti   "range",
+6          "weight": 150
+7        Bo
+8        "subway Line": {
+9         "FieldName": "subwayLineId",
+10          "size": 2,
+11         "name": "subway_Line"，
+12         "action": "match",
+13          "weight": 50
+14        了
+15
+16
+策略调权模块
+
+相对其他电商公司,贝壳找房设计了策略调权模块

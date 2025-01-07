@@ -1,0 +1,11 @@
+=== Content of image.png ===
+Lar EC [iss Tl E3 xs fom Ul ex ff as E3
+
+ER, DR, PRA, HOT, EMR, ABST
+
+模型服务
+
+=           FR                   KVR          5
+文本               量检索          图                检索          模型文件
+Elasticsearch        Milvus         Dgraph          Redis
+

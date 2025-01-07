@@ -1,0 +1,22 @@
+=== Content of image-14.png ===
+消息总线
+
+config-client
+
+Bus & Tenant
+
+配置中心
+
+config-server
+
+TaN       RISE
+Proxy BLUE <
+Bus & Tenant
+按索云平台
+更新& 定时更新
+白名单
+REAR
+she
+RBM
+平台配置本地缓存                  Git
+

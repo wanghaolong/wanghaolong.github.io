@@ -1,0 +1,32 @@
+=== Content of image-19.png ===
+链路超时控制
+目标在于,满足规定的响应时间内,尽可能的保障效果.
+
+设计思路
+
+© *okhttp (Hitz
+* 主要修正fegin请来breadTimeOut
+*T、remainTimeOut 动态计算超采厅间
+*2、合用时认配置的最大超上8加
+*3, BUTTER ARIES
+* Example:
+* 8       totalTimeOut = 900ms , releaseTime = 900ms
+* 8—4H recall maxTimeQut = 500ms < 900ms , readTimeOut = 500ms, costTime = 200ms, releaseTime =
+900-200 = 700ms
+* =H rank _maxTimeOut = 300ms < 700ms , readTimeOut = 300ms, costTime = 300ms, releaseTime =
+700-300 = 400ms
+*第三步reoreder maxTimeOut = 500ms > 400ms , readTimeOut = 400ms, costTime = 600ms, costTime >
+readTimeOut 超肝失败
+* 第四步info maxTimeOut = 100ms > 0ms , FH RATATAT NER
+* 最终返回敌二步的结黑
+
+多层降级模块
+结合链路超时设计,依次按照效果损失程度,进行5种进行降级处理
+1. 策略召回+排序+重排
+. 策略召回+ 排序
+. 策略召回
+. 缓存兜底
+
+(依赖)2.意图模块
+Raat
+

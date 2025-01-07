@@ -1,0 +1,23 @@
+=== Content of image-62.png ===
+离线学习框架
+
+样本构建      特征构建   ate    cord       评估和更新
+co                                            toned          Feature Colm             Desem                           ame
+站             em     Wide bee   wmxe     四
+aR    ‘faion [+ amma   wire          ssese | |, wz   Pa
+i         ic
+BRAM     |        一                     mama
+aaa                    .        +
+Cae) | | Connor)
+#    me   模型配置中心     TFServing
+特征日志服务          CE
+‘i                 一一         +
+\ Ee     在线推理服务
+请求外理  |      特征工程    |    omit  |    模型预测  |    响应返回
+请求处理      |           Feature Colima             aaa]
+排序校验
+a                    Predict
+cone        wane | "| seen |
+运回结果
+ET                  Seem.              一
+

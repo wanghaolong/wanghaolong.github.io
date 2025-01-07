@@ -1,0 +1,17 @@
+=== Content of image-55.png ===
+离线学习框架
+
+old                      寞型训练      评估和更新
+CE                       2       em
+[ee | ee oy | “Sace
+eae                           :
+BREAN                                oo
+TFserving
++
+线上服务 -模型层     i
+| 特征构建        预测request构建
+|   3       Foote Coun
+i   cr        —    Predict
+|
+wR    seas |) Cee]
+

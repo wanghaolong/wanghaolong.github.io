@@ -1,0 +1,32 @@
+=== Content of image-63.png ===
+改造效果
+
+1. 服务使用一套代码，面向多种协议提供服务。大幅提升迁代效率，同时可深入进行服务优化。
+
+2. 在线、离线数据统一来自 API，统一线上线下特征数据来源，也就不存在特征追溯中的数据对不齐问题，同时也不
+必感知Hive到API中数据变换规则的问题。
+
+3. 在线、离线配置收口到一套配置、一套格式、一处配置解决所有模型问题。
+4 . 提供完整的特征日志解决方案，减少线下改造特征带来的风险和成本。
+
+配置样例
+配置
+# 离线特征存储路径 $feature_dir/$Featureld/$pt
+
+feature_dir: ”/user/search_reco/reco/offline/feature”
+
+DataSource:
+sample:
+loadType: hdfs
+format: “parquet”
+path: “/user/search_reco/reco/reco_rank_model/user_test/sample/ {mode} /$pt”
+pt:
+start: ”{start_pt}”
+“{end_pt}” # 包含这天
+
+F200006:
+context_prefix: item feature
+key:
+house_code: item_id
+city_id: city_id
+pt_before: -1

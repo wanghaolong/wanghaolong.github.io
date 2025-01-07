@@ -1,0 +1,37 @@
+=== Content of image-60.png ===
+54
+55
+56
+57
+58
+59
+69
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+
+default_value: 1
+return_field: "cvr_weight"
+- sample_operator:
+function: sample_shuffle
+
+# ERUEARP EBA — sample_operato.
+function: select
+
+params:
+cols: ["request_id", "user_id", "city_id", "fb_expo_id", "item_id",
+"location", "label_type", "business_label", "label",
+"ovr_weight",
+"req_source", "service_id", "ts", "client_os_type", "pt"]
+SaveConf:
+saveType: hdfs
+format: parquet
+path:
+"Juser /search_reco/reco/reco_rank_model/user_test/sample/{dataset_type}/{pt}"

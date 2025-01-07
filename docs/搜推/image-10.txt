@@ -1,0 +1,130 @@
+=== Content of image-10.png ===
+54
+55
+56
+57
+58
+59
+69
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+nm
+72
+73
+74
+75
+76
+7
+78
+79
+80
+a1
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+
+190
+
+101
+
+102
+
+103
+
+104
+
+105
+
+106
+
+“Spl
+Cet
+
+1,
+
+"用户群组": [
+Cet
+
+1,
+
+"细分场景
+ota
+
+]
+3,
+"GsOpen": true
+3,
+"Be":
+"GsOpen": true
+3,
+"信息补充": {
+"isopen": false
+
+了
+},
+“BE: {
+},
+"SBM": {
+“effect-ranking-rent-V3",
+“manual-intervention-platform",
+"search-v2",
+
+"effect-reason",
+"召回": "effect-recall-rent-v3",
+"重排": "effect-rerank-rent-V3"
+
+{
+"client": {
+"healthcheck": {
+"enabled": true
+了
+了
+]
+"外部依赖配置": {
+"url": "http: //zeus-nlu-search.test-nlu-search.cto.test.ke
+3,
+"service": {
+"SRAR": {
+
+id-generator": true,
+"basic-search": true,
+
+"effect-page": false,
+"effect-reorder": true,
+
+"nlu-analysis": true,
+"effect-rank": true,
+
+"multi-city": true,
+"effect-recall": true,
+
+"aggregation-service
+"effect-reason": true
+i
+
+: true,
+
+-com/zeus/nlu/v1.0"

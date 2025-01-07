@@ -1,0 +1,2 @@
+=== Content of image-31.png ===
+除 pull 和 push 操作外，后续还开发了两种较为特殊的写入策略:

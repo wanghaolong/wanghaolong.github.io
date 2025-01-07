@@ -1,0 +1,6 @@
+=== Content of image-52.png ===
+性能报告
+数据总量204w,标量过滤后12w左右,32维特征
+1. QPS 1500
+2. Avg Tims, tp99 33ms
+3. CPU 3%

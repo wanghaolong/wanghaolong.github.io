@@ -1,0 +1,46 @@
+=== Content of image-30.png ===
+数据流写入流程如下:
+分析流程图可以找出一条完整的链路， mysql binlog > event-builder > event-accepter > data-builder > data-
+accepter > index > ES集群
+
+根据此链路对相关名词进行解释:
+
+aid                  解释
+
+epx kafka             传输 epx binlog 的 topic 所在 kafka 集群
+
+index-rep            备份索引写入服务，相同一份数据会同时写入到主备 ES 集群的索引中
+event kafka            存放 event 的 topic 所在 kafka 集群
+
+数据推送服务        SP wes push ，直接提供给业务方接口
+
+event-accepter ”把 event-builder 传来的 event 写入到 event kafka 中
+
+gidApi              搜索云平台提供规范，业务方提供接口
+一般情况下 event-builder 服务 只会消费 topic 中的 binlog
+如果存在脏数据或者用户有其他需求需要刷新全量数据，需要业务方提供获取全量数据的接口，就是gidApi
+gidApi 接口返回的数据一般也是用户从 mysql 表中直接获取的
+
+godApi        搜索云平台提供规范，业务方提供接口
+业务数据往往不会完全等于mysql表中的数据，一方面es适合多表/宽表存储，另一方面用户可能需要对数据做转换、关联维表等操作
+因此在前面的流程只传输id，然后由业务方提供 id参数返回业务数据的接口，就是 godApi，方便用户自定义返回数据
+
+data-accepter        收集来自两个方向的数据
+* 服务端拉取 pull
+© 该部分数据由 data-builder 传入
+。 data-builder 中将业务数据转换成 DATA API 接口的格式
++ 客户端推送 push
+。 ”该部分数据是业务方直接调用 DATA APIS
+数据整合后并一并写入到 data kafka
+
+data-builder          消费 event kafka 获取到 event 中的 id，并通过 godApi 接口获取到业务数据
+将业务数据转换成适合写入的格式后，发送到 data-accepter
+服务端拉取 pull (mysql binlog 消费) 到此结束
+
+event-builder     目的: 获取数据中的 ld，封装成 event 的格式写入到 event-accepter
+增量数据: binlog (Id - 主键) ，全量数据: gidApi (直接返回id)
+
+index                  索引写入服务，消费 data kafka 获取业务数据，封装成 bulk 请求写入到 ES集群
+
+epx                  阿里开源项目canal为主二次开发的产品，本质上是模拟 mysql从节点 获取 主节点 同步过来的 binlog，并写入到对应 topic 中
+用户需要先在这里配置binlog ft) topic

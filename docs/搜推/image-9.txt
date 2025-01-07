@@ -1,0 +1,42 @@
+=== Content of image-9.png ===
+"服务配置": {
+"场景配置": {
+"具体场景id": {
+
+"用户群组":
+meg
+
+Bp
+"处理过程": {
+"blLack-tList": {
+"isopen": false
+
+]，
+
+"重排":
+"isopen": true
+
+]，
+
+NLU": {
+
+Mall"
+
+]，
+"用户群组": [
+
+mall"
+1,
+"细分场景
+"all"
+]
+3,
+"GsOpen": true
+3,
+"mE
+"受众": 荆
+"城市": [
+mall"
+],
+
+[

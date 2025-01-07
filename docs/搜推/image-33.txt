@@ -1,0 +1,24 @@
+=== Content of image-33.png ===
+。 duplicator复制: 将一个索引的数据同步写入到另一个索引中
+。 hive2es: 使用spark streaming将hive数据写入es
+下面对相关名词进行解释:
+
+aid      解释
+
+data-duplicator        数据复制模块，创建一个新索引，数据源为现有索引的同步数据
+主要作用
++ ”不同业务想使用同一份数据时，可以以此作为隔离
++ “分散坦询压力
+实现方式
+*。 消费 data kafka，过滤出需要复制索引的业务数据
+。 转换成复制案引的 DATA API 格式
++ 复用 push 示辑重新写入到 data-accepter
+一般只在内部使用
+
+hive2es                       使用spark streaming 进行流处理，在云平台配置
+。 消费 hive2es kafka 获取id
+。 从 hive 拉取业务数据并转换成 DATA API格式
++ 复用 push $85) data-accepter
+属于特殊需求，使用方很少
+
+hive2redis                 同上，只不过是写入redis

@@ -355,8 +355,273 @@ endif
 ```
 
 ---
+### 4.2 Windsurf
+结合 **Windsurf**，快速生成业务流程图，以下是一个真实工作场景，用于生成[主管消息优化](https://alidocs.dingtalk.com/i/nodes/amweZ92PV6vZR33dfEQe2aBlVxEKBD6p)中的业务流程变更图。
+
+- 首先让我们看看代码改了啥
+    - 新增通用C端消息发送逻辑
+![alt text](image-4.png)
+    - 移除线索创建职责链中的主管消息发送逻辑
+![alt text](image-5.png)
+
+- 先让copilot总结变更（有点挫，无法使用）
+  ![alt text](image-6.png)
+
+- 再让windsurf总结变更
+![alt text](image-9.png)
+![alt text](image-10.png)
+![alt text](image-11.png)
+![alt text](image-12.png)
+- windsurf生成的代码如下：
+```plantuml
+@startuml
+skinparam backgroundColor white
+skinparam activity {
+    BorderColor black
+    BackgroundColor white
+    ArrowColor black
+}
+
+|ActivityDetailChainService|
+start
+:处理活动详情;
+if (是否为基础详情处理) then (yes)
+  :BaseDetailSaveHandler;
+  :BaseDetailClueHandler;
+  :BaseDetailNoticeHandler;
+  
+  |#Pink|ClueEventService|
+  :<font color=red>新增: commonEventChainHandle处理</font>;
+endif
+
+|ClueCreateCmdHandler|
+:按策略生成或关联线索;
+fork
+  :<font color=red>删除: sendWaitHandOverToManagerIfNeed</font>;
+fork again
+  :afterRelateOpp处理;
+end fork
+
+stop
+@enduml
+
+```
+- 然后我发现代码漏了一个流程，于是修改代码
+![alt text](image-13.png)
+![alt text](image-14.png)
+- 再次让windsurf总结变更
+  ![alt text](image-15.png)
+  ![alt text](image-16.png)
+
+- 生成代码如下：
+```plantuml
+@startuml
+skinparam backgroundColor white
+skinparam activity {
+    BorderColor black
+    BackgroundColor white
+    ArrowColor black
+}
+
+|#LightGray|旧流程|
+partition "原有流程" {
+    start
+    :ActivityDetailChainService处理活动详情;
+    :BaseDetailSaveHandler;
+    :BaseDetailClueHandler;
+    fork
+        :ClueCreateCmdHandler处理;
+        :生成或关联线索;
+        :#pink:直接发送等待分配给主管的消息;
+        note right: 原逻辑在ClueCreateCmdHandler中直接发送
+    fork again
+        :BaseDetailNoticeHandler;
+    end fork
+    :结束处理;
+    stop
+}
+
+|#LightBlue|新流程|
+partition "重构后流程" {
+    start
+    :ActivityDetailChainService处理活动详情;
+    :BaseDetailSaveHandler;
+    :BaseDetailClueHandler;
+    fork
+        :ClueCreateCmdHandler处理;
+        :生成或关联线索;
+        note right: 移除了直接发送消息的逻辑
+    fork again
+        :BaseDetailNoticeHandler;
+    end fork
+    
+    :#pink:ClueEventService.commonEventChainHandle;
+    note right
+    新增事件处理服务
+    统一处理消息发送逻辑
+    end note
+    
+    :结束处理;
+    stop
+}
+
+legend right
+    |颜色|说明|
+    |#pink|变更部分|
+    |#LightGray|原有流程|
+    |#LightBlue|新流程|
+endlegend
+
+@enduml
+
+```
+- 依然不太满意，自己画旧版逻，让windSurf生成新版逻辑
+旧版逻辑如下：
+```plantuml
+@startuml
+skinparam backgroundColor white
+:系统对接或批量导入线索;
+partition "线索创建职责链" {
+
+
+group 线索创建
+:线索初始化;
+if(未命中分配策略且状态为待交接?) then (yes)
+    :给创建部门主管发待交接消息;
+    note right: 即使转商了，也会发线索消息
+endif
+end group
+
+
+group 线索转商
+if(命中转商策略?) then (yes)
+    :线索转商;
+endif
+end group
+group 关联任务
+if(命中分配策略?) then (yes)
+    :分配线索;
+    :给主管发待分配消息;
+    note right: 即使转商了，也会发线索消息
+endif
+end group
+@enduml
+
+```
+- windsurf生成的新版逻辑如下：
+![alt text](image-20.png)
+```plantuml
+@startuml
+|线索创建职责链|
+start
+:系统对接或批量导入线索;
+
+group 线索创建
+    :线索初始化;
+    note right: 不再在此处发送消息
+end group
+
+group 关联任务
+    if (命中分配策略?) then (yes)
+        :分配线索;
+        note right: 不再在此处发送消息
+    endif
+end group
+
+|事件处理服务|
+:获取线索信息;
+
+if (是否已转商机?) then (yes)
+    #pink:不发送消息;
+    note right: 已转商机的线索不需要发送消息
+else (no)
+    if (线索状态?) then (待分配)
+        #pink:给主管发待分配消息;
+        note right
+            命中策略且分配到部门时
+            调用sendHandOverToManager
+            传入部门ID和策略名称
+        end note
+    else (待交接)
+        #pink:给创建部门主管发待交接消息;
+        note right
+            调用sendWaitHandOverToManager
+            传入创建部门ID
+        end note
+    endif
+endif
+
+note right
+    异常处理：
+    所有异常都会被捕获并记录
+    不影响主流程继续执行
+end note
+
+stop
+@enduml
+```
+- 再次细化
+![alt text](image-21.png)
+
+```plantuml
+@startuml
+|线索创建职责链|
+start
+:系统对接或批量导入线索;
+
+group 线索创建
+    :线索初始化;
+    note right: 不再在此处发送消息
+end group
+
+group 关联任务
+    if (命中分配策略?) then (yes)
+        :分配线索;
+        note right: 不再在此处发送消息
+    endif
+end group
+
+|事件处理服务|
+:获取线索信息;
+
+if (是否已转商机?) then (yes)
+    #pink:不发送消息;
+    note right: 已转商机的线索不需要发送消息
+else (no)
+    if (线索状态?) then (待分配)
+        #pink:给主管发待分配消息;
+        note right
+            命中策略且分配到部门时
+            调用sendHandOverToManager
+            传入部门ID和策略名称
+        end note
+    else (待交接)
+        #pink:给创建部门主管发待交接消息;
+        note right
+            调用sendWaitHandOverToManager
+            传入创建部门ID
+        end note
+    endif
+endif
+
+note right
+    异常处理：
+    所有异常都会被捕获并记录
+    不影响主流程继续执行
+end note
+
+stop
+@enduml
+```
+
+  
+
+
+
+  
 
 ## 5. 总结优势
+
 
 
 

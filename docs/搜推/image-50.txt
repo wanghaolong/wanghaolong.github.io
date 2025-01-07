@@ -1,0 +1,73 @@
+=== Content of image-50.png ===
+种类
+
+Elasticsearch
+
+Faiss
+
+Mivus
+
+OpenDistro
+Elasticsearch KNN
+
+SPTAG
+
+实现语言            客户端支持
+Java              JavaPython
+Python               Python
+an      Python/Java/GoLang
+Java+C++ —— Java/Python
+cH              Python + C#
+
+多条件
+召回
+
+yes
+
+no
+
+yes
+
+no
+
+学习 BIA 运维
+成本 RR 。 成本
+低 & 中
+中 高 高
+中 hom
+中 中 中
+高 中， 中
+
+分布
+
+yes
+
+no
+
+no
+
+no
+
+RR
+
+a
+
+a
+
+SRK 网兰
+
+|
+
+般
+
+备注
+
+原生功能
+需要二次
+开发
+
+1x 功能
+不全
+
+内置插件
+

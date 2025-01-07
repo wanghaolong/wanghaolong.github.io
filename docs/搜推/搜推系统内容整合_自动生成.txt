@@ -1,0 +1,2191 @@
+=== 搜推系统内容整合 ===
+创建时间：2025-01-03
+
+
+=== Content of image-1.txt ===
+=== Content of image-1.png ===
+我们按照数据处理流程来看, 依次经过 API层、统一网关、混推、中控、意图、召回、精排、重排、理由各环节,与业
+内的差异不大
+
+先介绍通用部分:
+意图: 主要是对 query 词的解析;例如 我们输入“西二旗整租,会提取出“西二旗"、"整租 "两个标签
+BE: 核心作用在于解决信息过载,控制召回数量及保障物料构成多样性,为后续精排环节减负.
+排序: 主要分为粗排和精排.对应的方法无非规则、机器学习和深度学习几种;
+
+粗排:一般使用的是业务规则,核心在于逻辑简单,效率高.
+
+精排:一般使用的是机器学习、深度学习;远辑复杂,准确性/转化率高.
+展示规则:主要用于打散,卡位排布,保证物料多样性同时,关注用户体验
+
+再介绍贝壳特有部分:
+API 作为交互层,处理用户的请求 混推层:负责多物料异构融合,保证物料多样性和策略多样性
+中控层: 负责对下游各模块进行调度及接口参数校验.
+
+在稳定性方面,必须对各模块有降级和兜底,避免空白页的情况;
+数据服务:
+
+涉及房源物料 、用户画像 和 模型特征
+存储选型上,基于文本分词匹配和聚合查询的场景,把房源数据维护在es 索引中;
+基于性能考虑,模型特征数据维护在 redis 中;
+BERS:
+
+依赖公司基于tf-serving 自建平台,使用grpc 调用
+
+基础组件:
+
+采用SpringCloud 框架,使用eureka服务注册发现,服务间通过feign进行http调用;网关使用zuul,进行降级限流;二
+次开发后,融合abtest 打标,数据降级等;
+
+部署上是按照业务线纬度独立部署,代码复用
+整体已经实现配置化迭代,操作灵活.后面重点介绍.
+
+=== Content of image-2.txt ===
+=== Content of image-2.png ===
+架构如何设计?
+
+我们以贝壳搜索架构和迭代来分析
+
+=== Content of image-3.txt ===
+=== Content of image-3.png ===
+   ”
+
+                  mx
+
+ame
+
+228
+
+aa
+1文本召回
+2. OREO
+3. 商业化召回
+人 me
+
+=== Content of image-4.txt ===
+=== Content of image-4.png ===
+v1.0 搜索架构
+
+早期贝壳搜索架构,微服务拆分的过于细,整理流程可以概括为"调度中控预处理> 召回>精排>融合 > ABH”,
+在每个环节都有3个及以上的微服务.我们暂且称之为第一阶段-
+
+为了支撑贝壳旗下各类C端产品如 二手房、新房、租房、装修、商业地产、海外地产等的快速迭代,每条业务线都有一
+套同样的架构,微服务应用超过50+,数量整体超过200多个.而此时负责工程迁代的开发人员仅有4个人.这时候存在的
+问题显而易见
+
+a. 微服务数量与开发人员数量不对等,导致个人开发效率不高,测试部署占据大量时间
+b. 各业务线功能基本类似,系统优化/问题修复需要逐个解决;差异部分靠硬编码处理,扩展性极差
+5. 服务链路过长,导致束体性能很差'微服务间少/无熔断降级,稳定性很差,大家都瘦于救火
+
+1.搜索架构整合
+
+。 首先进行逻辑梳理,进行整合,使多业务线共用同一套架构,这一步将核心应用数量缩减到7个,依次为 1中控、2.预处
+理、3.召回、4 .规则排序、5.模型排序、6.多流融合、7.信息补充
+
+间接依赖: 意图NLU 解析、用户画像、es-api服务、模型网关 等
+
+=== Content of image-5.txt ===
+=== Content of image-5.png ===
+
+=== Content of image-6.txt ===
+=== Content of image-6.png ===
+注意看,这里已经和业内经典的抽象逻辑单元一一对应上
+
+有做意图的预处理、负责多样性物料的召回、规则粗排序、模型精排序、异构融合展示、用于丰富内容的信息补充.
+基本上做到了应用单一指责. 也提升了开发人员、测试人员的工作效率.
+
+2.配置化迭代
+
+。 针对不同业务线,届辑差异的问题,我们设计了搜索云平台(同业内实现类似:例如阿里开源的Nacos )设计通用配置模
+版,解决功能差异;同时基于上方微服务架构,实现了功能配置化,如下图
+
+=== Content of image-7.txt ===
+=== Content of image-7.png ===
+
+=== Content of image-8.txt ===
+=== Content of image-8.png ===
+我们对场景标识(以下称场景id),配置其对应的 预处理、召回、排序、融合、理由 各环节的策略逻辑,举例如下
+
+=== Content of image-9.txt ===
+=== Content of image-9.png ===
+"服务配置": {
+"场景配置": {
+"具体场景id": {
+
+"用户群组":
+meg
+
+Bp
+"处理过程": {
+"blLack-tList": {
+"isopen": false
+
+]，
+
+"重排":
+"isopen": true
+
+]，
+
+NLU": {
+
+Mall"
+
+]，
+"用户群组": [
+
+mall"
+1,
+"细分场景
+"all"
+]
+3,
+"GsOpen": true
+3,
+"mE
+"受众": 荆
+"城市": [
+mall"
+],
+
+[
+
+=== Content of image-10.txt ===
+=== Content of image-10.png ===
+54
+55
+56
+57
+58
+59
+69
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+nm
+72
+73
+74
+75
+76
+7
+78
+79
+80
+a1
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+
+190
+
+101
+
+102
+
+103
+
+104
+
+105
+
+106
+
+“Spl
+Cet
+
+1,
+
+"用户群组": [
+Cet
+
+1,
+
+"细分场景
+ota
+
+]
+3,
+"GsOpen": true
+3,
+"Be":
+"GsOpen": true
+3,
+"信息补充": {
+"isopen": false
+
+了
+},
+“BE: {
+},
+"SBM": {
+“effect-ranking-rent-V3",
+“manual-intervention-platform",
+"search-v2",
+
+"effect-reason",
+"召回": "effect-recall-rent-v3",
+"重排": "effect-rerank-rent-V3"
+
+{
+"client": {
+"healthcheck": {
+"enabled": true
+了
+了
+]
+"外部依赖配置": {
+"url": "http: //zeus-nlu-search.test-nlu-search.cto.test.ke
+3,
+"service": {
+"SRAR": {
+
+id-generator": true,
+"basic-search": true,
+
+"effect-page": false,
+"effect-reorder": true,
+
+"nlu-analysis": true,
+"effect-rank": true,
+
+"multi-city": true,
+"effect-recall": true,
+
+"aggregation-service
+"effect-reason": true
+i
+
+: true,
+
+-com/zeus/nlu/v1.0"
+
+=== Content of image-11.txt ===
+=== Content of image-11.png ===
+167
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+
+线程池配置列表" : {
+
+"effect-remote": {
+"keepAliveTime"
+"queueSize": 100,
+"coresize": 150,
+"maxSize": 250
+
+3,
+
+"effect-common": {
+"keepAliveTime"
+"queueSize": 100,
+"coresize": 200,
+"maxSize": 250
+
+19,
+
+19,
+
+i
+
+i
+场景策略": {
+"功能开关": {
+"坐标检索
+
+: true
+
+"PERE": {
+"业务线类型
+"HERI": 950,
+
+"RRA": 180,
+"“channelid": "zufang",
+"物料主键": "coden
+
+]，
+
+"fietd-mapping": {
+"districtId": "districtId"，
+"bizcircteId": "bizcircleld"
+
+"租房"，
+
+了
+3,
+"请求时间限制": {
+effect-remote": 500,
+"basic-search": 200,
+"effect-reorder": 100,
+"nlu-analysis": 100,
+‘effect-rank": 200,
+leffect-recall": 400,
+500,
+"aggregation-service": 300,
+"effect-reason": 350
+
+force-check"
+
+"链接时间限制": {
+
+‘ef fect-remote
+
+500,
+basic-search": 200,
+"effect-reorder": 100,
+
+"nlu-analysis": 100,
+"effect-rank": 200,
+leffect-recall": 400,
+force-check": 500,
+
+aggregation-service": 300,
+"effect-reason": 350
+“remoteCity": {
+
+=== Content of image-12.txt ===
+=== Content of image-12.png ===
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+189
+181
+182
+183
+184
+185
+186
+187
+188 }
+
+3,
+"服务预热": {
+"preheat": {
+"requests": [
+
+{
+
+"headers": {
+3,
+"body"
+
+“urd
+
+"api /1012810002/search"
+
+i,
+"enabled
+了
+
+3,
+
+"降级数据": {
+"redis": {
+了
+
+3,
+
+"降级开关": {
+“open”: {
+
+"bs": true,
+
+false
+
+"core": false
+
+=== Content of image-13.txt ===
+=== Content of image-13.png ===
+这样,我们就把各个模块按照场景进行编排组合,并通过开关进行热插拔,通过配置变更进行修改.
+而日常功能迭代,也基本上都是进行配置修改. 行文至此,再介绍下 这个平台的架构设计
+
+=== Content of image-14.txt ===
+=== Content of image-14.png ===
+消息总线
+
+config-client
+
+Bus & Tenant
+
+配置中心
+
+config-server
+
+TaN       RISE
+Proxy BLUE <
+Bus & Tenant
+按索云平台
+更新& 定时更新
+白名单
+REAR
+she
+RBM
+平台配置本地缓存                  Git
+
+=== Content of image-15.txt ===
+=== Content of image-15.png ===
+* 搜索云平台提供http接口，用于获取微服务配置;
+
+*。 白名单搜索云平台配置，由更新或者定时更新程序从搜索云平台拉取到配置中心，如果拉取和白名单失败，会读本
+地磁盘缓存;
+
++ 多配置源，配置中心做原有配置拉取代码做了AOP切面，如果微服务属于白名单，则从搜索云平台拉取配置，否
+则默认从Git获取配置;
+
++ 配置中心从搜索云平台获取配置后，会将配置缓存在本地磁盘，也会有定时任务从搜索云平台拉取所有白名单的
+配置到本地磁盘。当配置中心从搜索云平台获取配置异常时，会读取本地磁盘的配置。
+
+。 配置中心提供了proxy代理接口，跳过EndPoint实现的接口权限校验问题，其实就是配置中心开了一个普通的
+Controller接口，再将请求转发到EndPoint接口
+
+。 配置中心支持Bus刷新和Tenant刷新两种方式，定制destination使用”, ”分割刷新多个服务，禁止使用通配符刷新
+
+V2.0 搜索推荐架构统一
+随着架构功能逐步完善,适代流程更加规范;我们希望架构能够做的更加通用、灵活,适配更多场景
+
+考虑到公司搜索、推荐在工程上存在极大的通用性,出于降本提效的目标(工程专注稳定性、算法专注策略迁代),我们
+进行了搜索、推荐的架构整合(见下图).
+
+=== Content of image-16.txt ===
+=== Content of image-16.png ===
+----------------------T----------------
+
+排序
+sie
+
+计算层
+
+BER
+
+=== Content of image-17.txt ===
+=== Content of image-17.png ===
+乍一看这架构,着实让人头疼,找不到很好的切入点
+
+搜索架构在第一阶段已经做过整合抽象,按照单一职责进行微服务拆分,而推荐采用传统的三层架构,逻辑主要集中在计
+算层(召回、排序、融合三部分功能).依赖数据层进行物料特征获取,模型层进行模型预估.应用层对应业务规则和展示
+规则.
+
+架构统一,难点有三
+
+1推荐场景繁多,且对接口耗时有强要求
+
+2. 服务抽象设计难度大,推荐架构与搜索架构差异很大
+3. 整合周期长,缺少智能工具和自动脚本提效
+
+1.中控层(流程编排)
+中控层在不同场景下,基于配置进行模块间调度;核心在于稳定性方面的设计,保证匹配的同时,又要最大程度的保证业
+务效果.
+
+流程如下图
+
+=== Content of image-18.txt ===
+=== Content of image-18.png ===
+间
+
+请求超时时|
+
+[LT
+
+=== Content of image-19.txt ===
+=== Content of image-19.png ===
+链路超时控制
+目标在于,满足规定的响应时间内,尽可能的保障效果.
+
+设计思路
+
+© *okhttp (Hitz
+* 主要修正fegin请来breadTimeOut
+*T、remainTimeOut 动态计算超采厅间
+*2、合用时认配置的最大超上8加
+*3, BUTTER ARIES
+* Example:
+* 8       totalTimeOut = 900ms , releaseTime = 900ms
+* 8—4H recall maxTimeQut = 500ms < 900ms , readTimeOut = 500ms, costTime = 200ms, releaseTime =
+900-200 = 700ms
+* =H rank _maxTimeOut = 300ms < 700ms , readTimeOut = 300ms, costTime = 300ms, releaseTime =
+700-300 = 400ms
+*第三步reoreder maxTimeOut = 500ms > 400ms , readTimeOut = 400ms, costTime = 600ms, costTime >
+readTimeOut 超肝失败
+* 第四步info maxTimeOut = 100ms > 0ms , FH RATATAT NER
+* 最终返回敌二步的结黑
+
+多层降级模块
+结合链路超时设计,依次按照效果损失程度,进行5种进行降级处理
+1. 策略召回+排序+重排
+. 策略召回+ 排序
+. 策略召回
+. 缓存兜底
+
+(依赖)2.意图模块
+Raat
+
+=== Content of image-20.txt ===
+=== Content of image-20.png ===
+查询理解简介 一 QU (Query Understanding)
+
+词法分析
+坦和变换
+短语分析
+成分识别
+LBS分析
+
+业务应用
+
+au
+RIES!   (sine
+
+Query : 杭州东附近7天酒店
+
+县
+
+杭州，东,附近 ,7天，酒店
+
+杭州东了杭州东站 , TRICK
+
+杭州(0.4) 东(0.3) 附近(o.1) 7天(0.8) 酒店(0.5)
+杭州东(LOC station) 随近(o) 7天(BRAND) 酒店(CATE)
+异地 ; 杭州东(30.3031, 120.1987) ，7天(Bid-134235)
+
+快捷酒店、出行 ; 地标半径召回
+
+=== Content of image-21.txt ===
+=== Content of image-21.png ===
+利用基础NLP能力，对我们的用户输入的Query进行分析，产生一系列的基础信号，然后这些信号会应用到整个搜索
+链路的召回、排序等各个阶段。
+
+我们重点借鉴下 实体识别、实体链接2部分
+
+=== Content of image-22.txt ===
+=== Content of image-22.png ===
+实体识别 - 整体架构                          enn
+
+在线
+
++ 实体匹配: 最短路径
+
++ 模型预测: BERT+知识增强
++ TAREE: 模板规则+crf
+
+离线
+
++ 数据挖掘流程
++ 实体知识库
+”标注评测系统
+
+=== Content of image-23.txt ===
+=== Content of image-23.png ===
+实体识别的整体框架，主要分两个部分: 下面的离线端和上面的在线部分。
+
+线上的识别来源主要分两部分，一部分是词典的实体匹配，一部分是模型预测，然后再往上是消歧策略，实体词典匹
+配，主要解决一些热门和词库里能够匹配的词，对一些长尾和泛化的词识别，还是依赖于模型。但是这两个部分中间
+的结果可能会有一              歧策略，包括多粒度、多结果选择。我们主要通过一些模板规则，进行优
+先级的消歧，最终输出一个多路的结果，因为某些query会有粒度和类别的歧义。
+
+离线部分主要是两个大的部分: 一部分是实体挖掘，这个主要是为线上的实体匹配提供基础的实体库，模型方面主要
+是一些基础的模型训练、优化相关的工作。
+
+=== Content of image-24.txt ===
+=== Content of image-24.png ===
+实体链接 - 整体框架
+
+在线
+
++ 实体召回
+
++ HERI
+离线
+
++ Mention挖气
++ 基础打分
+
+Pres)
+
+Plelcontext)
+
+( 55" Jenn }
+基础排序
+
+| xe] (wenan) (an 中
+上下文排序
+
+上下广汉
+
+[Ce Ce
+
+ES
+
+=== Content of image-25.txt ===
+=== Content of image-25.png ===
+离线的部分，其核心是对所有物理实体mention的挖掘，其实就是实体的一个别名，用来扩大实体链接召回。
+
+线上部分，首先通过别名进行实体召回，然后对召回的实体进行消歧排序。消上岐主要结合Query文本序列的特征、基
+于地理位置的特征 (比如城市和GeoHash) ，还有上下文的一些文本信息进行消岐排序，返回给用户最相关的Top实
+体。
+
+设计电路
+1) 基础能力: 模位提取、业务线识别
+2) 业务指标: 无结果率 & PCTR & PCVR 、站内PCTR&商机转化率; 站外用户拉端率
+
+=== Content of image-26.txt ===
+=== Content of image-26.png ===
+系统架构
+
+支持业务          aa     新记     ae     站外
+本  | | meee  ome |) | 。 多路召回 |; |，相关性排序 | anes |!
+基础数据    术生字典    POI    corey   APE   RAE
+
+执行流程
+
+ea   co
+
+rer)    4    me         ae
+EJ                 |
+JE             is
+stomgo ramen
+eic
+  sal 一   a       == Ten
+wa [om [ram] Se    =
+(am               SES =T=T =
+于 moe
+= [| mn
+cial                 men |.       testing | SS TIRARINNEA. Nt
+tsin| ome
+| m  0
+ana] me      ape)
+pee                   te |
+= j= |i |e) om
+
+=== Content of image-27.txt ===
+=== Content of image-27.png ===
+多路召回
+
+ceveas | mecca | wma
+
+ET
+
+=== Content of image-28.txt ===
+=== Content of image-28.png ===
+按需提取
+槽位标签中,会基于不同业务维度提供对应的标签 和 置信度
+
+1 "community": {
+
+2    "action": "FILTER",
+3     "threshold": 1,
+4    "Fields": "hdicResblockId"
+5         了
+
+(依赖) 3.数据录入
+
+数据流服务是负责业务检索数据的写入，主要支持两种写入方式:
+© 服务器拉取 (pull): mysql binlog监听写入
++ 客户端推送 (push): 提供写入API，业务方自写入
+
+=== Content of image-29.txt ===
+=== Content of image-29.png ===
+
+=== Content of image-30.txt ===
+=== Content of image-30.png ===
+数据流写入流程如下:
+分析流程图可以找出一条完整的链路， mysql binlog > event-builder > event-accepter > data-builder > data-
+accepter > index > ES集群
+
+根据此链路对相关名词进行解释:
+
+aid                  解释
+
+epx kafka             传输 epx binlog 的 topic 所在 kafka 集群
+
+index-rep            备份索引写入服务，相同一份数据会同时写入到主备 ES 集群的索引中
+event kafka            存放 event 的 topic 所在 kafka 集群
+
+数据推送服务        SP wes push ，直接提供给业务方接口
+
+event-accepter ”把 event-builder 传来的 event 写入到 event kafka 中
+
+gidApi              搜索云平台提供规范，业务方提供接口
+一般情况下 event-builder 服务 只会消费 topic 中的 binlog
+如果存在脏数据或者用户有其他需求需要刷新全量数据，需要业务方提供获取全量数据的接口，就是gidApi
+gidApi 接口返回的数据一般也是用户从 mysql 表中直接获取的
+
+godApi        搜索云平台提供规范，业务方提供接口
+业务数据往往不会完全等于mysql表中的数据，一方面es适合多表/宽表存储，另一方面用户可能需要对数据做转换、关联维表等操作
+因此在前面的流程只传输id，然后由业务方提供 id参数返回业务数据的接口，就是 godApi，方便用户自定义返回数据
+
+data-accepter        收集来自两个方向的数据
+* 服务端拉取 pull
+© 该部分数据由 data-builder 传入
+。 data-builder 中将业务数据转换成 DATA API 接口的格式
++ 客户端推送 push
+。 ”该部分数据是业务方直接调用 DATA APIS
+数据整合后并一并写入到 data kafka
+
+data-builder          消费 event kafka 获取到 event 中的 id，并通过 godApi 接口获取到业务数据
+将业务数据转换成适合写入的格式后，发送到 data-accepter
+服务端拉取 pull (mysql binlog 消费) 到此结束
+
+event-builder     目的: 获取数据中的 ld，封装成 event 的格式写入到 event-accepter
+增量数据: binlog (Id - 主键) ，全量数据: gidApi (直接返回id)
+
+index                  索引写入服务，消费 data kafka 获取业务数据，封装成 bulk 请求写入到 ES集群
+
+epx                  阿里开源项目canal为主二次开发的产品，本质上是模拟 mysql从节点 获取 主节点 同步过来的 binlog，并写入到对应 topic 中
+用户需要先在这里配置binlog ft) topic
+
+=== Content of image-31.txt ===
+=== Content of image-31.png ===
+除 pull 和 push 操作外，后续还开发了两种较为特殊的写入策略:
+
+=== Content of image-32.txt ===
+=== Content of image-32.png ===
+push data
+
+索引写入服务
+
+=== Content of image-33.txt ===
+=== Content of image-33.png ===
+。 duplicator复制: 将一个索引的数据同步写入到另一个索引中
+。 hive2es: 使用spark streaming将hive数据写入es
+下面对相关名词进行解释:
+
+aid      解释
+
+data-duplicator        数据复制模块，创建一个新索引，数据源为现有索引的同步数据
+主要作用
++ ”不同业务想使用同一份数据时，可以以此作为隔离
++ “分散坦询压力
+实现方式
+*。 消费 data kafka，过滤出需要复制索引的业务数据
+。 转换成复制案引的 DATA API 格式
++ 复用 push 示辑重新写入到 data-accepter
+一般只在内部使用
+
+hive2es                       使用spark streaming 进行流处理，在云平台配置
+。 消费 hive2es kafka 获取id
+。 从 hive 拉取业务数据并转换成 DATA API格式
++ 复用 push $85) data-accepter
+属于特殊需求，使用方很少
+
+hive2redis                 同上，只不过是写入redis
+
+=== Content of image-34.txt ===
+=== Content of image-34.png ===
+4召回层(同构融合)
+01 流程分析
+
+=== Content of image-35.txt ===
+=== Content of image-35.png ===
+
+=== Content of image-36.txt ===
+=== Content of image-36.png ===
+
+=== Content of image-37.txt ===
+=== Content of image-37.png ===
+综合搜索推荐的召回功能进行抽象,整体划分为三个阶段: 依次为召回前、召回中、召回后;
+
+4.1.召回前
+召回前,主要涉及 基于NLP的意图识别、基于用户画像和策略的请求改写等功能,我们参照业内其他公司的设计,定义
+了 意图解析模块(上方),画像解析模块,策略调权模块
+用户画像模决
+相关设计不做疯述,这里只介绍贝壳对于的标签调权
+
+1       "rent_period_max": {
+2         "FieldName": "maxLease",
+3          "size": 2,
+4         "name": "rent_period",
+5         "acti   "range",
+6          "weight": 150
+7        Bo
+8        "subway Line": {
+9         "FieldName": "subwayLineId",
+10          "size": 2,
+11         "name": "subway_Line"，
+12         "action": "match",
+13          "weight": 50
+14        了
+15
+16
+策略调权模块
+
+相对其他电商公司,贝壳找房设计了策略调权模块
+
+=== Content of image-38.txt ===
+=== Content of image-38.png ===
+ab配置
+
+QUEL, Spee
+
+=== Content of image-39.txt ===
+=== Content of image-39.png ===
+下方json 中,按!
+
+mouaewnrh
+
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+
+35
+36
+37
+38
+39
+40
+al
+42
+43
+44
+45
+46
+47
+
+茧菇街搜索架构(QR 请求改写环节)
+
+Nora": [
+{
+"Field": "expocnt",
+"action": "Ite",
+"value": "0"
+了
+]，
+Nora": [
+{
+"Field": "sjScore",
+"action": "Ite",
+"value": "0"
+了
+]，
+Nor2": [
+{
+"field": "appSourceBrand",
+"action": "terms",
+"value": "1313"
+了
+]，
+Nori": [
+{
+"field": "appSource",
+"action": "terms",
+"value": "123,2123,20123"
+了
+]
+
+"Field":
+"order"
+3,
+
+'sjScore",
+
+"Field": "expocnt",
+
+"order": "asc"
+3,
+"Field"
+"order"
+了
+
+=== Content of image-40.txt ===
+=== Content of image-40.png ===
+4.2 召回中
+工程实现上,贝帝搜索、推荐两套系统,均将房源数据维护在 es 索引 中,以租赁业务为例
+目前使用的是 条件过滤、画像召回、特征召回、距离扩召回 四种;
+搜索侧由于仅依赖es索引,通过服务注册发现,调用 es集群对应的api 服务;
+推荐侧涉及多数据源(es、redis、hbase、api),为了做到解糯和复用,独立设立了数据层服务,以策略标识方式,区分不同
+数据源的物料获取.
+
+=== Content of image-41.txt ===
+=== Content of image-41.png ===
+REBAR
+
+计算层
+BER
+
+服务注册发现
+
+召回
+es-api
+
+=== Content of image-42.txt ===
+=== Content of image-42.png ===
+4 .3 数据层的设计
+
+考虑到多样性召回 和 代码复用性,我们采取推荐侧的设计,把物料获取的功能独立出来,放在数据层实现;同时做好对应
+的缓存、降级处理. 后来在异构融合场景架构设计时,也进一步验证了数据层设计的必要性
+
+=== Content of image-43.txt ===
+=== Content of image-43.png ===
+|      二策略标识解析      上;|       2.4O任务装配
+了
+|   4结果封装处理   |     3 .并行章询
+
+       策略
+数据
+]       降级
+
+策略
+数据
+缓存
+
+=== Content of image-44.txt ===
+=== Content of image-44.png ===
+4.4 召回后
+召回后主要负责两大部分功能: 业务调权、策略融合,都在应用内存中处理
+业务调权
+使用groovy脚本,结合配置平台实现
+
+“dynomiccatculate™® |
+“puzhu-gongyu": {
+“parameters”: {
+rules": [
+
+“scripts”: [
+{
+
+xy": “cal-bid-rankScore”,
+der”: 1
+
+“doScript": " GU.sortTtems(*rankScore’, ctx); int count = gifor Ci in ctx.itens) {if Ccount >= 3) {break;}sif Ci
+-itenType == 'connon_rent" && i.houseTags.contains("is_one_price’)) { i.ruleScore += 50; count += 1;}};for Ci in
+ctx. items) { if Ccount >= 3) {break;};if (i.itenType — ‘conmon_rent’ && (!i.houseTags..contains("is_one_price")
+‘88 i houseTags.contains('is-hot'))) {i.ruleScore += 49; count += 1;}3; for Ci in ctx.items) { if CiritenType ==
+"conmon_rent" && i.listPicture == '') { i.ruleScore -='49;}}",
+pdateVars": (GI),
+
+=,
+“过各规则分计算:1 RRM (MSIE) 2 无图片打压"，
+
+融合部分
+
+1 ¢
+2      "mergeType"                融合类型(普通)
+3    "name": "moo4          融合策略标识
+4    "weight": {           融合权重
+5         "21000011": 1,           -- 召回流id
+6       "21900016": 1
+7                }
+8 }
+9
+10
+moo |B | Rome               ASTRRRPRIRIREERRIEM, EIRURIIE
+erage merge          ‘RI RR LILUODE NEA E UNS
+mo02 。 已 优先级融合            根据候造集权重作为优先级，按优先级优先取权重训的人选集，如果取不满，则从次高的候选集中继续取，以此
+上                     M8, BIBLE
+Priory merge
+moos BRIER              AERARLETAT CORE, HASTE, RRKON, MRT,
+上                 的候选集终绎补充，直到取清为止
+Weight merge
+moo4 已                   SAAT: 以权重李率去取如加策咯，从造中的召回策咯中取一个房源。然后循环上面的扣作
+£m
+% 。 mandom_hem_merge
+mo05 。 已 。。 权重概率优先级融合       每次选择一个召回策咯的所有物料:按时权量板率先取召回策略，取注为止-
+Fandom state nese
+
+至此,将召回部分功能进行抽象拆解完毕
+
+=== Content of image-45.txt ===
+=== Content of image-45.png ===
+4.5配置化
+我们再看下如何使用配置完成这三部分功能的关联
+
+=== Content of image-46.txt ===
+=== Content of image-46.png ===
+recalLid,:mergeld 一人
+recalud 2meroed 一全
+
+30%group -一 ab_default -一 defalutt0 {
+
+500019                                            606.2
+606.b
+To%group
+serviceld                                                            886.8
+888
+011901001
+
+云平台配置 一 放大字段范围
+filter
+扩展方法名称列表
+“一国
+dmp_ontine
+|           boost — ren
+recallid                                 dmp_offtine
+一全于
+
+xccoen 一人
+
+mergeid 一 扩展方法名称列夫 一 八国
+
+=== Content of image-47.txt ===
+=== Content of image-47.png ===
+具体配置
+
+1
+
+me own
+
+19
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+a1
+32
+33
+34
+35
+36
+37
+38
+39
+40
+al
+42
+43
+44
+45
+46
+47
+48
+49
+
+"1013901005
+
+{                        // BRI
+b_name": {
+"1013901005-ab_name-ab_group-default": {
+“blackIdList": [],
+"recallRule": {
+“quantityControl": {
+
+// BLE
+// GRBEBER
+//) GRBB FR
+
+“recallInfoList": [
+{
+"recallid": "21000016" // 召回流id
+},
+
+"21000023"
+
+“recallId": "21000008"
+
+"21000010"
+
+“recallId": "21000022"
+3,
+
+"21000017"
+
+oO,
+"mergeRule": {
+“quantityControl": {
+
+"rate":              // BBL
+“maxNum":
+"minNum，
+3,
+“mergeControlList": [
+t
+"mergeType": "normal",
+"name": "moo4",         1) BEBE
+
+weight": {
+"21000008": 11,
+"21000010": 1,
+"21000016":
+"21000017":
+"21000022": 4,
+"21000023": 11
+
+=== Content of image-48.txt ===
+=== Content of image-48.png ===
+50
+51
+52
+53
+54
+55
+
+=== Content of image-49.txt ===
+=== Content of image-49.png ===
+物料的多样性,就意味着召回形式的多元化 和 多模态.
+贝壳目前已实现如下召回形式
+
+。 文本召回(短query词)
+
+。 标量过滤(各类筛选条件)
+
++ 商业化召回(CPT、CPA类)
+
+。 策略指标召回(低商机、低曝光房源)
+
+* 个性化召回(基于用户偏好,类似推荐)
+
+。 向量化召回(基于用户行为embedding)
+
+。 短视频找房
+。 直播找房
+
+模态对应物料由运营侧 和 如视平台(贝壳子公司) 提供,召回形式也都基于当前架构进行请求改写、扩充;
+重点介绍下
+
+4.6向量召回
+提升召回率
+
+1、由于目前的推荐策略更多用以|21和规则类为主 (偏历史) ，向量化检索可以将召回策略模型化，显著提升召回
+策略的预测能力,提高召回率后间接作用于过程指标商机量.
+
+2、户型这种物料，天然就是使用向量而非文本描述，所以必须依赖向量检索能力来实现检索召回。
+向量调研
+采用哪种向量引擎,对比如下
+
+其中，Faiss 和 SPTAG 只是核心算法库，需要进行二次开发包装成服务; Milvus 的 1.x 版本中只能存储id 和 向量，
+不能完整的满足我们的使用需求,新版milvus支持标量过滤，内部使用bitmap实现，但性能不高;基于集群稳定性和
+可维护性等考虑，相对于后置插件的部署，更倾向使用 ES({v7.6.2) 的原生功能
+
+=== Content of image-50.txt ===
+=== Content of image-50.png ===
+种类
+
+Elasticsearch
+
+Faiss
+
+Mivus
+
+OpenDistro
+Elasticsearch KNN
+
+SPTAG
+
+实现语言            客户端支持
+Java              JavaPython
+Python               Python
+an      Python/Java/GoLang
+Java+C++ —— Java/Python
+cH              Python + C#
+
+多条件
+召回
+
+yes
+
+no
+
+yes
+
+no
+
+学习 BIA 运维
+成本 RR 。 成本
+低 & 中
+中 高 高
+中 hom
+中 中 中
+高 中， 中
+
+分布
+
+yes
+
+no
+
+no
+
+no
+
+RR
+
+a
+
+a
+
+SRK 网兰
+
+|
+
+般
+
+备注
+
+原生功能
+需要二次
+开发
+
+1x 功能
+不全
+
+内置插件
+
+=== Content of image-51.txt ===
+=== Content of image-51.png ===
+1 # mapping 设计
+
+"embedding": {
+"type" : "dense_vector",
+"dims" : 32
+}
+
+# 请求脚本
+{
+
+me wm
+
+"size": 100,
+19 "query": {
+
+11    "script_score": {
+2     "query": {
+
+1B      "bool": {
+
+14        "Filter": [
+as         {
+16
+
+17
+
+18
+
+19
+
+20           了
+21          了
+22         了
+23       ]
+24      +
+
+25     },
+
+26     "script"
+27
+28
+29
+30       "query_vector": [
+31         -0.0228145,
+
+32         0.170765,
+
+33         =
+34         0. 80648327
+35       ]
+
+36      +
+
+37     了
+
+38    了
+
+39  】
+
+40 }
+
+"320500",
+
+ourcen
+
+2norm(params.query_vector，'vectorEmbedding')"，// 欧式号襄
+"painless",
+
+=== Content of image-52.txt ===
+=== Content of image-52.png ===
+性能报告
+数据总量204w,标量过滤后12w左右,32维特征
+1. QPS 1500
+2. Avg Tims, tp99 33ms
+3. CPU 3%
+
+=== Content of image-53.txt ===
+=== Content of image-53.png ===
+指标名
+
+QPS表现
+
+ES节点表现
+
+响应时间指标
+
+记录
+
+seen at)
+
+结果描述
+
+达到1500QPS
+
+CPU约为3%
+
+avg1ims
+tp90 20ms
+
+tp99 33ms
+
+=== Content of image-54.txt ===
+=== Content of image-54.png ===
+实测数据 -- es 单Node 性能评测
+48 核,32G堆,200万数据量,50维特征,2000QPS 下,响应时间介于 39~52ms, 错误率 0.03%
+
+5.排序层
+从工程视角,排序层首先需要保证稳定性和效果无损.
+
+效果无损的核心依赖是统一模型的迭代，即使架构迁代了也不会有任何影响，所以重点更多的应该是放在统一
+模型以及特征构建上.
+
+=== Content of image-55.txt ===
+=== Content of image-55.png ===
+离线学习框架
+
+old                      寞型训练      评估和更新
+CE                       2       em
+[ee | ee oy | “Sace
+eae                           :
+BREAN                                oo
+TFserving
++
+线上服务 -模型层     i
+| 特征构建        预测request构建
+|   3       Foote Coun
+i   cr        —    Predict
+|
+wR    seas |) Cee]
+
+=== Content of image-56.txt ===
+=== Content of image-56.png ===
+存在问题:
+
+1特征变换离线在线也是两套，离线使用PySpark，在线使用Java
+?数据源线上线下其实是两套，离线特征是通过从Hive表中追湖
+特征变换优化
+
+=== Content of image-57.txt ===
+=== Content of image-57.png ===
+离线学习框架
+
+特征构建
+
+anit         评估和更新
+[一          wen
+
+[一一S| | wwe
+
+和                  eesoeep | | qm | | wm
+
+线上服务-模型层                 |
+特征构建                               预测equest构建
+ET
+TU                        Tee              edict
+
+=== Content of image-58.txt ===
+=== Content of image-58.png ===
+改造内容
+
+. 统一线上线下特征变换，将特征变换抽成单独的模块
+
+2. 以线上特征变换为基础，使用Java实现特征变换模块
+
+3. 线下使用Spark，因此将Java语言的特征变换算子封装成Spark SQL可以使用的UDF函数
+4
+
+同时，我们还对配置文件也进行了对齐，使得线上线下使用同一套特征变换的配置文件(一个模型的特征变换配置
+文件一般几百行)
+
+=== Content of image-59.txt ===
+=== Content of image-59.png ===
+muaewnrh
+
+19
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+a1
+32
+33
+34
+35
+36
+37
+38
+39
+40
+al
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+
+Workflow:
+= sample_mark:
+chec
+
+cols: ["label", "location", "request_id"]
+function: position_mark_after_max_click_position
+params:
+cols_params:
+basic_position_col: "label"
+expo_position: "location"
+request_id: "request_id’
+return_field: "topN_position_mark"
+= sample_filter:
+chec
+
+cols: ["topN_position_mark"]
+function: sample_filter
+
+params
+cond: "$topN_position_mark<=6"
+
+# DOREAREYL FRE ==> IEAEA: AEA:
+check:
+cols: ["label"]
+function: random_down_sampling
+
+8 - sample_sampling:
+
+params:
+label_tag:
+sample_label: "$label
+basic_label: "$label
+sample_rate:
+sample_label: 8
+basic_label: 1
+sample_seed: ©
+log_switch: True
+
+nm
+
+# AR
+- sample_merge:
+
+check:
+# ARPREAZE—-RIAAG, MFZRUE pt KARA cols:
+function: merge_with_count_threshold
+params:
+group_field
+cond: "$label
+threshold: 1
+
+# label RE
+= sample_mark:
+check:
+cols: ["label_type"]
+function: cond_weight
+params:
+sample_weight:
+sample.
+cond
+
+$business_label
+weight: 10
+
+"user_id",
+
+"item_id",
+
+"label"]
+
+=== Content of image-60.txt ===
+=== Content of image-60.png ===
+54
+55
+56
+57
+58
+59
+69
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+
+default_value: 1
+return_field: "cvr_weight"
+- sample_operator:
+function: sample_shuffle
+
+# ERUEARP EBA — sample_operato.
+function: select
+
+params:
+cols: ["request_id", "user_id", "city_id", "fb_expo_id", "item_id",
+"location", "label_type", "business_label", "label",
+"ovr_weight",
+"req_source", "service_id", "ts", "client_os_type", "pt"]
+SaveConf:
+saveType: hdfs
+format: parquet
+path:
+"Juser /search_reco/reco/reco_rank_model/user_test/sample/{dataset_type}/{pt}"
+
+=== Content of image-61.txt ===
+=== Content of image-61.png ===
+搭建排序框架
+为什么要改造流程
+> 工程架构部分
+1. 迭代成本过高
+同早期搜索架构设计一样,服务部署存在至少5套业务代码，开发成本巨大，极易造成线上逻辑不对齐的情况
+2. 优化周期过长
+功能不收敛 ,一处优化，应用到其它若干服务的周期过长。
+3. 稳定性不健全
+无法提供一体化的解决方案 服务比较分散，技术架构不一致，难以实现完善的监控、容错机制。
++ 数据链路部分
+1. 数据迟消
+原始数据通过 TH 的方式在构建训练集追溯，会存在不一致问题,例如用户画像特征在离线训练集中是关联前一
+天的Hive数据，但是这部分数据线上API一般是在下午2点左右更新数据，因此实际上2点之前线上使用的是T+2的画
+像数据
+2. 数据变更无感知
+从Hive中获取的数据，需要依赖Hive到API的转换规则 比如用户画像数据以及二手房源特征数据等在从Hive到
+API中存在转换逻辑，这部分需要对齐，上游变换无法感知
++ 配置改造
+1. 现有配置不够统一，且比较分散 配置分为:特征工程配置、模型配置等，较为分散;离线、在线配置已经差异巨
+大，不同服务间的配置差异也尤为明显
+
+=== Content of image-62.txt ===
+=== Content of image-62.png ===
+离线学习框架
+
+样本构建      特征构建   ate    cord       评估和更新
+co                                            toned          Feature Colm             Desem                           ame
+站             em     Wide bee   wmxe     四
+aR    ‘faion [+ amma   wire          ssese | |, wz   Pa
+i         ic
+BRAM     |        一                     mama
+aaa                    .        +
+Cae) | | Connor)
+#    me   模型配置中心     TFServing
+特征日志服务          CE
+‘i                 一一         +
+\ Ee     在线推理服务
+请求外理  |      特征工程    |    omit  |    模型预测  |    响应返回
+请求处理      |           Feature Colima             aaa]
+排序校验
+a                    Predict
+cone        wane | "| seen |
+运回结果
+ET                  Seem.              一
+
+=== Content of image-63.txt ===
+=== Content of image-63.png ===
+改造效果
+
+1. 服务使用一套代码，面向多种协议提供服务。大幅提升迁代效率，同时可深入进行服务优化。
+
+2. 在线、离线数据统一来自 API，统一线上线下特征数据来源，也就不存在特征追溯中的数据对不齐问题，同时也不
+必感知Hive到API中数据变换规则的问题。
+
+3. 在线、离线配置收口到一套配置、一套格式、一处配置解决所有模型问题。
+4 . 提供完整的特征日志解决方案，减少线下改造特征带来的风险和成本。
+
+配置样例
+配置
+# 离线特征存储路径 $feature_dir/$Featureld/$pt
+
+feature_dir: ”/user/search_reco/reco/offline/feature”
+
+DataSource:
+sample:
+loadType: hdfs
+format: “parquet”
+path: “/user/search_reco/reco/reco_rank_model/user_test/sample/ {mode} /$pt”
+pt:
+start: ”{start_pt}”
+“{end_pt}” # 包含这天
+
+F200006:
+context_prefix: item feature
+key:
+house_code: item_id
+city_id: city_id
+pt_before: -1
+
+=== Content of image-64.txt ===
+=== Content of image-64.png ===
+6.重排层
+重排层聚集于对精排结果的后处理,偏重展示规则和流量分配.
+
+=== Content of image-65.txt ===
+=== Content of image-65.png ===
+了-28
+
+=== Content of image-66.txt ===
+=== Content of image-66.png ===
+展示规则方面,主要是做同类型物料的打散;流量分配方面,主要是基于离线统计不同场景,物料所处卡位对应的转化率,
+进行分配.这里是借助效果评测工具进行操作
+效果评测工具
+目标是在策略线上应用前,能够直观看到变化,为运营 和 测试同学提升效率
+
+=== Content of image-67.txt ===
+=== Content of image-67.png ===
+bial
+
+=== Content of image-68.txt ===
+=== Content of image-68.png ===
+功能预期:
+
+1、效果诊断                  一一是否符合用户偏好(CTR 视角) ,是否符合商业化预期(CPT、CPA)
+2、可视化管理各业务卡位配置 ”一一 根据阶段性核心指标干预流量分配
+
+3、支持权重调节,干预房源排序 — 灵活调节 画像标签、房源标签,策略因子权重,呈现干预后效果
+4 、支持多维度个性化配置 ”一一 设计多种流量玩法,给到城市总、圈经纬度,灵活进行玩法调整
+
+5、支持AB 实验                一一 打通AB实验,根据页面调配的策略属性,运用到AB 实验中
+
+6、按预期效果目标给出卡位配置组合建议     一一 进行商机预估,ROI 预测
+
+能力展示
+得益于此前架构设计的合理性,在流程中各环节补充对应详细数据,根据评测标识 :strategyld 获取评测结果
+
+=== Content of image-69.txt ===
+=== Content of image-69.png ===
+本
+tayon,
+
+Py
+
+2
+aw
+
+aomn
+
+RFSRraIsoN
+
+remnson
+
+RE
+
+eRe
+
+more
+
+a
+
+3
+
++0
+
+on
+
+ea
+
+area
+
+6
+
+RE
+
+Coe)
+
+Coe)
+
+RE
+
+=== Content of image-70.txt ===
+=== Content of image-70.png ===
+7信息补充
+
+基于搜索架构,信息补充为一个微服务，而推荐的信息补充则在计算层中，故需将推荐和搜索的信息补充模块进行
+合并.流程如下图
+
+=== Content of image-71.txt ===
+=== Content of image-71.png ===
+推荐系统理
+由与标签
+
+推荐标签
+
+=== Content of image-72.txt ===
+=== Content of image-72.png ===
+受限于房产重资产的属性,信息补充模块相对偏静态.这里介绍下这部分模块的规划设计
+
+。 基于用户画像
+。 基于用户的全场景行为构建中 /短期画像,根据各个画像的能力去进行内容的召回、排序决定信息出现的时机、
+展示的内容，是否高亮等
++ 基于策略体系
+
+。 基于推荐理由类型指标体系，进行理由的整体治理，降低无效理由，增加理由命中，而非将理由当作信息呈现
+的一个载体
+
+=== Content of image-73.txt ===
+=== Content of image-73.png ===
+a
+
+Se & & 4
+
+=== Content of image-74.txt ===
+=== Content of image-74.png ===
+统一架构,在原搜索架构基础上,将 预处理模块、融合模块中粗排部分,整合到召回层(召回前)、将依赖服务(模型服务除
+外)整合到数据层,融合模块中展示规则部分,放到重排服务里.
+
+8 混推层(异构融合)
+上述架构,能够解决同构物料对应的搜索场景,但针对异构融合场景,就会存在策略配置复杂(下方左图) 、调用繁琐的问
+题(下方右图).
+
+=== Content of image-75.txt ===
+=== Content of image-75.png ===
+召回产出多流
+
+排序提受中控并发调用
+，或排序内部并发执行
+
+对多流进行油权、穿播
+
+=== Content of image-76.txt ===
+=== Content of image-76.png ===
+为此,我们调研了美团搜索架构设计,设立了异构融合层 -- 混推层.
+
+=== Content of image-77.txt ===
+=== Content of image-77.png ===
+美团搜索架构
+
+Al
+
+=
+=
+iu aa   Ee  [ER
+
+DataFunCon 2021
+
+=== Content of image-78.txt ===
+=== Content of image-78.png ===
+美团搜索的排序架构从上而下可以被分成四层。
+
+最上层是用户发出query请求后有一个接入展现层。
+
+下面一层是异构合并层。返回的结果包含四种类型: 商品、商家、广告和卡片。商品和商家都包含多个业务，
+
+例如商家可以有酒店、旅游景点、餐饮店等; 商品可以有送药上门的商品、美团优选的商品、美团买菜的商品
+等。不同的业务履约的形式也不一样。
+
++ 再下面一层是商品和商家的排序层，我们进一步将其细化为不同层级。首先是召回粗排层L1，接下来是精排层
+L2，再往后是策略小模型层L3。商品和商家会在两路分别进行同构排序。在排序中控层完成同构排序后，我们
+会将结果送入上层的merge server进行异构排序。这时候排序就会涉及异构的元素，比如商品、商家、各种卡
+片以及广告，卡片常见的例子有排行榜和运营活动等。异构排序完成后会把最终结果返回给用户。架构还包含
+一个查询分析模块，会对query输入进行理解。
+
+最下层是基础检索层，我们会针对不同的业务进行索引和基本召回服务的构建。
+
+=== Content of image-79.txt ===
+=== Content of image-79.png ===
+je TH
+
+排序分层架构
+
+DataFunCon 2021
+
+=== Content of image-80.txt ===
+=== Content of image-80.png ===
+从排序算法的角度进行全链路的分层。最下面是数据层，接下来会进行多路的召回和多路的粗排，然后会进行多路
+融合，随后进行统一的大模型精排，再往上一层是各个场景的重排序以及异构排序。其中异构排序会引入卡片和广
+告。最后我们会有一个API进行结果展示。
+
+=== Content of image-81.txt ===
+=== Content of image-81.png ===
+架构设计如下图
+
+=== Content of image-82.txt ===
+=== Content of image-82.png ===
+混推模块功能:
+
+1.
+
+Zar won
+
+支持多流并行获取，兼顾对单流独立策略迭代
+
+. 支持效果流、业务流的策略搭配,调用链路更简洁
+
+. 支持物料数量的指定缩放,为模型预测环节减负
+
+. 支持同构物料场景优先级配置,最大程度保障指标效果
+. 支持跨机房跨专线,规范服务调用
+
+. 灵活切换单场景、混合场景策略指标的数据收集
+
+=== Content of image-83.txt ===
+=== Content of image-83.png ===
+V 3.0 流量运营系统
+
+业界各种互联网平台类产品,按功能可以对应到如下图中四象限，随着产品形态多元化发展，也苦遍存在单一产
+品对应多个子场景分类。如贝壳，整体属于交易类，偏LBS导航型，同时由于存在房源类型复杂、用户目标分散、业
+务流量扶持等，因此也有推荐型场景
+
+=== Content of image-84.txt ===
+=== Content of image-84.png ===
+内容类
+
+所见即所得
+
+注重信息触达
+
+如材盖率、完备率、提及率等指标
+
+百度
+
+小红书
+
+推荐型                                                        导航型
+用户目标模糊                                                    用户目标明确
+保障用户体验，注重调度能力                                          注重转化效率
+如EXP等指标
+
+如CTR、CYVR等指标
+
+DARE
+
+交易类
+
+存在后续交易
+注重整体利润
+如CVR、RO等指标
+
+=== Content of image-85.txt ===
+=== Content of image-85.png ===
+针对不同场景的流量展位运营思路
+BRM (BP) REDE
+
+现有展位
+
+RR 60%  搜索列表页、地图找房、短视频找房
+目标流量占比
+
+推荐类 10%    首页FEED、列表置顶推荐、附近推荐
+目标流量占比
+
+内容类 10%   首页FEED，列表吊顶位等，详情页模块
+目标
+
+活动类 10%  特价专区
+
+供给侧(平台)流量分层
+
+从供给侧出发，流量分层有两种不同视角。
+
+用户目标明确
+投放自然流量房源，关注匹配转化效率如CTR、CVR
+
+用户目标模糊
+
+投放用户偏好类房源提升,关注匹配转化效率如CTR、CVR
+投放策略提升类房源如低商机房源
+
+投放主动倾斜流量房源如急需去化房源
+平台接入方目标明确
+
+主要投放品牌介绍、小区攻略、在租日报等
+
+基于内容特点带出房源,提升用户粘性
+平台接入方目标明确
+
+投放主动倾斜流量房源如急需去化房源
+
+分别是去化目标视角 和 财务视角。
+
+长线来看，业务应该以财务视角分配流量，系统能力支持一房一策，针对不同房源的单体利润、去化难度等配比不同
+流量，实现全局最优。
+短期来看，应该采用去化目标视角。业务还有持续的规模增长目标，系统能力也不具备一房一策的模型和数据能力，
+因此需要以去化目标产出规则，规则驱动流量的局部调配，实现短期目标最优。
+
+结果指标(财务)视角分层
+流量分布
+自然类              全场景
+商业化类        CPA、CPT
+
+最终作用于去化,关注去化收入
+
+最终作用于去化,关注商业化收入
+
+基于此,我们跳出搜索单场景得束缚,站在商业运营视角,结合业务前端来重新审视这套架构
+
+=== Content of image-86.txt ===
+=== Content of image-86.png ===
+租赁API
+RAE RRS
+
+‘marl
+SOnALsaH ARES
+
+业务视角
+运营去化效率+用户体验
+
+搜索卡位分配                                                     搜索异构县合
+MABSRRs 国定卡们分配                                          地物料到 + ROMER + Sor HM ARBOR
+
+搜索同构融合                                                     搜索同构融合
+SRE CRIS                                        ‘SOUL + 下配度预信 + SETAE + 所天人名
+
+=== Content of image-87.txt ===
+=== Content of image-87.png ===
+在中台视角,专注于技术底层,目标是打磨通用能力,完成精准匹配;
+在业务视角,更关注与用户、平台、商品三方的共同收益,具体分为3部分:流量运营、转化效率、用户体验.
+
+=== Content of image-88.txt ===
+=== Content of image-88.png ===
+
+=== Content of image-89.txt ===
+=== Content of image-89.png ===
+原有架构已经在匹配层面完成了转化维度的工作,即CTR的预估
+而这一数据枢纽,得益于抽象出来的搜推API 层,在整个项目中产生飞轮效应
+
+=== Content of image-90.txt ===
+=== Content of image-90.png ===
+1数据枢纽
+
+|    ce]     |          |    特征处理
+架构全貌如下
+|                             am                             |
+|                              2
+one, REM, RR
+|                            gaan                            |
+san 0ftAns. mun
+|                            sent                            |
+人的，             更       |     RRO)
+wane              ante es Row        EE
+Sara            SEMEL)       |    sERBEHIRE)
+
+=== Content of image-91.txt ===
+=== Content of image-91.png ===
+2.效果仿真
+一、能力现状
+
+基于策略多版本编排、流量回放、策略数据可视化。支持历史流量回放和线上流最眼中两种形式的一站式流量仿真平台。
+
+=== Content of image-92.txt ===
+=== Content of image-92.png ===
+2.效果仿真
+
+一、能力现状
+基于策略多版本编排、流量回放、策咯数据可视化，支持而次量回放和续上流基四中丙种形式的一站式流最仿真平台
+
+=== Content of image-93.txt ===
+=== Content of image-93.png ===
+| ana ]     | smmeuamm |    人 amamms      ]
+
+(wom }( (vers) (masse) [wmaaos] (ea) (sea) (ara) |
+EE E-
+oo)                =            a
+
+Ca | aanra a Ce wm I ema -一
+
+数仓                            实时流_
+[ (caamnaen)] [wsoss ] [ws ] [asrs ] || (enorme) [cass |
+
+=== Content of image-94.txt ===
+=== Content of image-94.png ===
+多版本编排
+
+。 自由组合现有人-房〔小区，商团) 体系的策略组件。 实时创建仿真策略图
+。 支持 策略图维度、策略组件维度 的仿真结果对比。
+
+流量回放
+
+。 历史流量回放， 基于历史离线hive表，对仿真策略进行流量回放-
+= 线上流量味跑: 针像线上流量，对仿真策略进行流量回放
+
+第咯数据可视化
+
+。 中台通用指标看板: 策略流量分布、V5排名、人盘关系【共享盘/责任盘/钦护盘) 。
+。 业务定制化指标看板: 接入仿真rafka结果流，开发定制化业务需求，
+
+=== Content of image-95.txt ===
+=== Content of image-95.png ===
+3.能力支撑
+1零商机调度专项
+该项目背景为自营租房中,存在过曝、欠噬的问题
+营房源是否已获得预期商机,从而进行流量调整.
+
+=== Content of image-96.txt ===
+=== Content of image-96.png ===
+省心租零商机 - 实时动态调度方案
+
+RRB EES
+
+展位分场景
+搜索场景     推荐场景
+
+曝光均衡
+
+Sy + ae       时间片办转调度
+
+=o
+
+有       FRROMLER
+访量、商机量按时
+
+Dees ra        RRARLR
+
+BREE 曝光、核访，
+
+小时数据
+房源-曝光&点击
+
+T+1 8
+房源-商机
+
+个
+@ Hb 0 实时同步MQ/RPC)
+MMM LMM?
+YW
+ey A 实时数据
+
+日期-房源-商机
+
+=== Content of image-97.txt ===
+=== Content of image-97.png ===
+2.平台收益模型专项
+该项目背景为平台视角下,平衡 BPA, AMA, BEARERS BAND
+目标在于基于现有的流量资源,实现商机维度收益最大化
+
+=== Content of image-98.txt ===
+=== Content of image-98.png ===

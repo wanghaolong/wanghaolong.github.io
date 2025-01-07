@@ -1,0 +1,69 @@
+=== Content of image-51.png ===
+1 # mapping 设计
+
+"embedding": {
+"type" : "dense_vector",
+"dims" : 32
+}
+
+# 请求脚本
+{
+
+me wm
+
+"size": 100,
+19 "query": {
+
+11    "script_score": {
+2     "query": {
+
+1B      "bool": {
+
+14        "Filter": [
+as         {
+16
+
+17
+
+18
+
+19
+
+20           了
+21          了
+22         了
+23       ]
+24      +
+
+25     },
+
+26     "script"
+27
+28
+29
+30       "query_vector": [
+31         -0.0228145,
+
+32         0.170765,
+
+33         =
+34         0. 80648327
+35       ]
+
+36      +
+
+37     了
+
+38    了
+
+39  】
+
+40 }
+
+"320500",
+
+ourcen
+
+2norm(params.query_vector，'vectorEmbedding')"，// 欧式号襄
+"painless",
+

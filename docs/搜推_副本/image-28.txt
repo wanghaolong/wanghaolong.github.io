@@ -1,0 +1,16 @@
+=== Content of image-28.png ===
+按需提取
+槽位标签中,会基于不同业务维度提供对应的标签 和 置信度
+
+1 "community": {
+
+2    "action": "FILTER",
+3     "threshold": 1,
+4    "Fields": "hdicResblockId"
+5         了
+
+(依赖) 3.数据录入
+
+数据流服务是负责业务检索数据的写入，主要支持两种写入方式:
+© 服务器拉取 (pull): mysql binlog监听写入
++ 客户端推送 (push): 提供写入API，业务方自写入

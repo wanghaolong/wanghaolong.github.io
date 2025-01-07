@@ -1,0 +1,117 @@
+=== Content of image-59.png ===
+muaewnrh
+
+19
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+a1
+32
+33
+34
+35
+36
+37
+38
+39
+40
+al
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+
+Workflow:
+= sample_mark:
+chec
+
+cols: ["label", "location", "request_id"]
+function: position_mark_after_max_click_position
+params:
+cols_params:
+basic_position_col: "label"
+expo_position: "location"
+request_id: "request_id’
+return_field: "topN_position_mark"
+= sample_filter:
+chec
+
+cols: ["topN_position_mark"]
+function: sample_filter
+
+params
+cond: "$topN_position_mark<=6"
+
+# DOREAREYL FRE ==> IEAEA: AEA:
+check:
+cols: ["label"]
+function: random_down_sampling
+
+8 - sample_sampling:
+
+params:
+label_tag:
+sample_label: "$label
+basic_label: "$label
+sample_rate:
+sample_label: 8
+basic_label: 1
+sample_seed: ©
+log_switch: True
+
+nm
+
+# AR
+- sample_merge:
+
+check:
+# ARPREAZE—-RIAAG, MFZRUE pt KARA cols:
+function: merge_with_count_threshold
+params:
+group_field
+cond: "$label
+threshold: 1
+
+# label RE
+= sample_mark:
+check:
+cols: ["label_type"]
+function: cond_weight
+params:
+sample_weight:
+sample.
+cond
+
+$business_label
+weight: 10
+
+"user_id",
+
+"item_id",
+
+"label"]

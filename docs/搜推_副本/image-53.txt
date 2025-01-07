@@ -1,0 +1,23 @@
+=== Content of image-53.png ===
+指标名
+
+QPS表现
+
+ES节点表现
+
+响应时间指标
+
+记录
+
+seen at)
+
+结果描述
+
+达到1500QPS
+
+CPU约为3%
+
+avg1ims
+tp90 20ms
+
+tp99 33ms

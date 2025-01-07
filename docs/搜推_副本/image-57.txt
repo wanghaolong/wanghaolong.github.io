@@ -1,0 +1,17 @@
+=== Content of image-57.png ===
+离线学习框架
+
+特征构建
+
+anit         评估和更新
+[一          wen
+
+[一一S| | wwe
+
+和                  eesoeep | | qm | | wm
+
+线上服务-模型层                 |
+特征构建                               预测equest构建
+ET
+TU                        Tee              edict
+

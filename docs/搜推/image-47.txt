@@ -1,0 +1,97 @@
+=== Content of image-47.png ===
+具体配置
+
+1
+
+me own
+
+19
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+a1
+32
+33
+34
+35
+36
+37
+38
+39
+40
+al
+42
+43
+44
+45
+46
+47
+48
+49
+
+"1013901005
+
+{                        // BRI
+b_name": {
+"1013901005-ab_name-ab_group-default": {
+“blackIdList": [],
+"recallRule": {
+“quantityControl": {
+
+// BLE
+// GRBEBER
+//) GRBB FR
+
+“recallInfoList": [
+{
+"recallid": "21000016" // 召回流id
+},
+
+"21000023"
+
+“recallId": "21000008"
+
+"21000010"
+
+“recallId": "21000022"
+3,
+
+"21000017"
+
+oO,
+"mergeRule": {
+“quantityControl": {
+
+"rate":              // BBL
+“maxNum":
+"minNum，
+3,
+“mergeControlList": [
+t
+"mergeType": "normal",
+"name": "moo4",         1) BEBE
+
+weight": {
+"21000008": 11,
+"21000010": 1,
+"21000016":
+"21000017":
+"21000022": 4,
+"21000023": 11

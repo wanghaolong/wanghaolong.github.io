@@ -1,0 +1,134 @@
+=== Content of image-11.png ===
+167
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+
+线程池配置列表" : {
+
+"effect-remote": {
+"keepAliveTime"
+"queueSize": 100,
+"coresize": 150,
+"maxSize": 250
+
+3,
+
+"effect-common": {
+"keepAliveTime"
+"queueSize": 100,
+"coresize": 200,
+"maxSize": 250
+
+19,
+
+19,
+
+i
+
+i
+场景策略": {
+"功能开关": {
+"坐标检索
+
+: true
+
+"PERE": {
+"业务线类型
+"HERI": 950,
+
+"RRA": 180,
+"“channelid": "zufang",
+"物料主键": "coden
+
+]，
+
+"fietd-mapping": {
+"districtId": "districtId"，
+"bizcircteId": "bizcircleld"
+
+"租房"，
+
+了
+3,
+"请求时间限制": {
+effect-remote": 500,
+"basic-search": 200,
+"effect-reorder": 100,
+"nlu-analysis": 100,
+‘effect-rank": 200,
+leffect-recall": 400,
+500,
+"aggregation-service": 300,
+"effect-reason": 350
+
+force-check"
+
+"链接时间限制": {
+
+‘ef fect-remote
+
+500,
+basic-search": 200,
+"effect-reorder": 100,
+
+"nlu-analysis": 100,
+"effect-rank": 200,
+leffect-recall": 400,
+force-check": 500,
+
+aggregation-service": 300,
+"effect-reason": 350
+“remoteCity": {
