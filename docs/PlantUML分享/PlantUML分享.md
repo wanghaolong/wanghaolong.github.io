@@ -1,4 +1,3 @@
-
 # PlantUML 经验分享
 
 ## 1. 简单介绍 PlantUML
@@ -26,7 +25,6 @@
    ```
 
 
-
 ### 2.2 在IntelliJ IDEA中使用 PlantUML（MacOS环境）
 
 #### 步骤 1：安装Graphviz
@@ -38,14 +36,12 @@
    ```bash
    dot -version
    ```
- 
-   3. 执行如下命令， 记住安装路径，例如：`/opt/homebrew/bin/dot`。
+   3. 执行如下命令，记住安装路径，例如：`/opt/homebrew/bin/dot`。
    ```bash
    which dot
    ```
 
 #### 步骤 2：下载 **PlantUML JAR 文件**：
-
    1. 前往 [PlantUML 下载页面](https://plantuml.com/download)。
    2. 下载 `plantuml.jar` 文件并保存到固定目录，例如：`~/tools/plantuml.jar`。
 
@@ -104,49 +100,221 @@ end group
 ---
 
 ### 3.2 活动图
-活动图描述动态流程。以下是一个简单的活动图代码：
+
+给QA提供技术文档时，比较常用，比如[勿致电技术文档](https://alidocs.dingtalk.com/i/nodes/AR4GpnMqJzMLzPPoiZEvoOXoVKe0xjE3)
 ```plantuml
 @startuml
+'https://plantuml.com/activity-diagram-beta
+
 start
-:Input Credentials;
-if (Valid Credentials?) then (yes)
-  :Grant Access;
-else (no)
-  :Deny Access;
+
+:学员详情打开勿致电;
+if (单个账号) then (是)
+  :调用/saveStudent接口;
+  :修改学员为勿致电;
+  #skyblue:保存或更新勿致电表;
+  #skyblue:插入勿致电日志;
+else (多个账号)
+  :调用/student/not-call-stu/update接口;
+    :修改学员表;
+    #skyblue:保存或更新勿致电表;
+   #skyblue :插入勿致电日志;
 endif
-stop
+
+
+
+
+
+end
+
+
 @enduml
 ```
 
 ---
 
-### 3.3 类图
-类图展示类及其之间的关系。以下是一个简单的类图代码：
+### 3.3 状态图
+梳理线索状态时，通过plantUML生成状态图，方便理解
+
 ```plantuml
 @startuml
-class User {
-  +String name
-  +String email
-  +login()
+!theme sketchy-outline
+hide empty description
+
+skinparam state {
+  FontColor Black
+  BackgroundColor White
+  BorderColor Black
 }
-class Admin {
-  +manageUsers()
+skinparam note {
+  FontColor Black
+  BackgroundColor LightYellow
+  BorderColor Black
 }
-User <|-- Admin
+
+
+state "未归档" as Unarchived {
+
+  [*] -[#red]-> 待交接#mistyrose  : 未指定owner
+  note on link
+    触发条件:
+    - 事件监听：未命中分
+       配策略且非强制转商
+  end note
+
+
+
+  [*] -[#red]-> 待分配#mistyrose  : 交接给部门
+      note on link
+        触发条件:
+        - 事件监听：命中分配策略
+      end note
+
+
+
+
+  [*] --> 待跟进 : 交接给个人
+
+
+  待交接 --> 待分配 : 交接给部门
+  待交接 --> 待跟进 : 交接给个人
+
+  待分配 --> 待跟进 : 交接给个人
+  待跟进 -right-> 跟进中
+
+  待分配 --> 已回收
+  待跟进 --> 已回收
+  跟进中 --> 已回收
+}
+
+Unarchived -left-> 已归档#mistyrose : 命中归档策略
+Unarchived -right-> 已转商 : 转商
+
+
+@enduml
+
+
+
 @enduml
 ```
 
 ---
 
 ### 3.4 组件图
-组件图展示系统中的组件及其相互依赖关系。以下是一个组件图的示例代码：
+
 ```plantuml
 @startuml
-package "Web Application" {
-  [Frontend] --> [Backend]
-  [Backend] --> [Database]
+
+!theme sketchy-outline
+
+rectangle [一知外呼] {
 }
+
+rectangle [SCRM] {
+}
+
+rectangle #lightcyan {
+database [审计日志] {
+}
+
+database [勿致电日志]  {
+}
+
+
+database [质检勿致电记录] {
+}
+}
+
+rectangle [质检Kafka] {
+}
+
+
+
+
+rectangle [OPP] #lightyellow {
+    [勿致电管理]
+    [勿致电质检]
+ rectangle [勿致电管理]{
+   rectangle [外呼回调接口] {
+   }
+   rectangle [批量取消勿致电接口] {
+   }
+   rectangle [更新学员信息接口] {
+   }
+    }
+
+    rectangle [勿致电质检] {
+
+   rectangle [质检Consumer]{
+   }
+
+   rectangle [质检勿致电列表] {
+   }
+    }
+
+
+}
+
+[SCRM] ..> [更新学员信息接口] : 开启勿致电
+[SCRM] ..> [批量取消勿致电接口] : 关闭勿致电
+[SCRM] ..> [质检勿致电列表] : 管理质检勿致电
+[一知外呼] .[#red].> [外呼回调接口] : 回调-开启勿致电
+[质检Kafka] .[#blue].> [质检Consumer] : 语音质检消息
+
+
+
+
+
+
+[更新学员信息接口] .down.> [勿致电日志]
+[批量取消勿致电接口] .down.> [勿致电日志]
+[外呼回调接口] .[#red]down.> [勿致电日志]
+[审计日志] .[#pink]right.> [勿致电日志] : 迁移历史数据
+[更新学员信息接口] .down.>  [审计日志]
+
+[质检Consumer] .[#blue]down.> [质检勿致电记录] : 命中勿致电质检项
+[质检勿致电列表] .up.>  [质检勿致电记录] : 更新标记结果
+
+
+
+
+
 @enduml
+
+
+
+
+
+```
+### 3.5 脑图
+
+``` plantuml
+@startmindmap
+!theme materia
+
+
+skinparam {
+    DefaultBackgroundColor LightGreen
+    FontColor Black
+    ArrowColor DarkGreen
+}
+
+* 主要工作
+
+**[#lightblue] 勿致电管理
+*** 勿致电列表
+*** 批量取消勿致电
+*** 勿致电日志
+*** 质检勿致电
+** 主管消息
+*** 部门主管配置
+*** 线索-主管消息发送
+** 其他需求
+*** 线索列表，新增一知手机号
+*** 业绩申诉待审导出文件时，新增调整方式及商机编码
+
+
+@endmindmap
 ```
 
 ---
@@ -208,40 +376,40 @@ endif
 ```plantuml
 @startuml
 start
-:从 LoginUserThreadLocal 获取邮箱;
-:根据邮箱查询 DataPermissionDO;
-if (permissionDB == null) then (是)
-    :返回 "没有部门权限";
+:从LoginUserThreadLocal获取邮箱;
+:根据邮箱查询权限记录;
+if (权限记录为空?) then (是)
+    :返回 "无权限";
     stop
 else (否)
-    :获取 permissionDB 的 DataPermissionTypeEnum;
-    if (typeEnum == DataPermissionTypeEnum.ALL) then (是)
-        :返回 "有部门权限";
+    :获取权限类型;
+    if (权限类型是全部?) then (是)
+        :返回 "有权限";
         stop
     else (否)
-        :根据 permissionDB id 查询 DataPermissionDetailsDO 列表;
-        if (details 为空) then (是)
-            :返回 "没有部门权限";
+        :获取权限详情列表;
+        if (详情列表为空?) then (是)
+            :返回 "无权限";
             stop
         else (否)
-            :按 schoolId 分组 details;
-            :从分组中获取当前学校的权限明细;
-            if (curSchoolDetails 为空) then (是)
-                :返回 "没有部门权限";
+            :按学校ID分组详情;
+            :获取当前学校的权限详情;
+            if (当前学校详情为空?) then (是)
+                :返回 "无权限";
                 stop
             else (否)
-                if (typeEnum == DataPermissionTypeEnum.SCHOOL) then (是)
-                    :返回 "有部门权限";
+                if (权限类型是学校级别?) then (是)
+                    :返回 "有权限";
                     stop
                 else (否)
-                    :遍历 curSchoolDetails;
-                    if (detail.deptCode 等于 deptCode) then (是)
-                        :返回 "有部门权限";
+                    :遍历当前学校的部门权限;
+                    if (部门编码匹配?) then (是)
+                        :返回 "有权限";
                         stop
                     else (否)
                         :继续遍历;
                     endif
-                    :返回 "没有部门权限";
+                    :返回 "无权限";
                     stop
                 endif
             endif
@@ -254,102 +422,92 @@ endif
 ```plantuml
 @startuml
 start
-:获取当前用户的邮箱;
-:根据邮箱查询权限记录;
-if (没有权限记录) then (是)
-    :返回 "没有部门权限";
-    stop
-else (否)
+:获取用户邮箱;
+:查询用户权限;
+if (有权限记录?) then (是)
     :获取权限类型;
-    if (权限类型是全部) then (是)
-        :返回 "有部门权限";
+    if (是全部权限?) then (是)
+        :返回 "有权限";
         stop
     else (否)
-        :查询权限明细;
-        if (没有权限明细) then (是)
-            :返回 "没有部门权限";
-            stop
-        else (否)
-            :按学校分组权限明细;
-            :获取当前学校的权限明细;
-            if (没有当前学校的权限) then (是)
-                :返回 "没有部门权限";
-                stop
-            else (否)
-                if (权限类型是学校) then (是)
-                    :返回 "有部门权限";
+        :获取权限详情;
+        if (有权限详情?) then (是)
+            :获取当前学校权限;
+            if (有当前学校权限?) then (是)
+                if (是学校级别权限?) then (是)
+                    :返回 "有权限";
                     stop
                 else (否)
-                    :遍历当前学校的权限明细;
-                    if (找到匹配的部门) then (是)
-                        :返回 "有部门权限";
+                    if (有对应部门权限?) then (是)
+                        :返回 "有权限";
                         stop
                     else (否)
-                        :继续遍历;
+                        :返回 "无权限";
+                        stop
                     endif
-                    :返回 "没有部门权限";
-                    stop
                 endif
+            else (否)
+                :返回 "无权限";
+                stop
             endif
+        else (否)
+            :返回 "无权限";
+            stop
         endif
     endif
+else (否)
+    :返回 "无权限";
+    stop
 endif
 @enduml
 ```
 - **"使用不同配色突出返回有权限和无权限的节点，要求配色优雅简洁"**，再次请求，生成的代码如下：
 ```plantuml
 @startuml
-skinparam backgroundColor #F5F5F5
 skinparam activity {
-    BackgroundColor #FFFFFF
-    BorderColor #B0B0B0
-    StartColor #87CEEB
-    EndColor #FF6347
-    DiamondBackgroundColor #F0E68C
-    DiamondBorderColor #B0B0B0
-    ArrowColor #4682B4
+    BackgroundColor #f0f0f0
+    BorderColor #808080
+    StartColor #808080
+    EndColor #808080
 }
 
 start
-:获取当前用户的邮箱;
-:根据邮箱查询权限记录;
-if (没有权限记录) then (是)
-    :<color:red>返回 "没有部门权限"</color>;
-    stop
-else (否)
+:获取用户邮箱;
+:查询用户权限;
+if (有权限记录?) then (是)
     :获取权限类型;
-    if (权限类型是全部) then (是)
-        :<color:green>返回 "有部门权限"</color>;
+    if (是全部权限?) then (是)
+        :<color:green>返回 "有权限"</color>;
         stop
     else (否)
-        :查询权限明细;
-        if (没有权限明细) then (是)
-            :<color:red>返回 "没有部门权限"</color>;
-            stop
-        else (否)
-            :按学校分组权限明细;
-            :获取当前学校的权限明细;
-            if (没有当前学校的权限) then (是)
-                :<color:red>返回 "没有部门权限"</color>;
-                stop
-            else (否)
-                if (权限类型是学校) then (是)
-                    :<color:green>返回 "有部门权限"</color>;
+        :获取权限详情;
+        if (有权限详情?) then (是)
+            :获取当前学校权限;
+            if (有当前学校权限?) then (是)
+                if (是学校级别权限?) then (是)
+                    :<color:green>返回 "有权限"</color>;
                     stop
                 else (否)
-                    :遍历当前学校的权限明细;
-                    if (找到匹配的部门) then (是)
-                        :<color:green>返回 "有部门权限"</color>;
+                    if (有对应部门权限?) then (是)
+                        :<color:green>返回 "有权限"</color>;
                         stop
                     else (否)
-                        :继续遍历;
+                        :<color:red>返回 "无权限"</color>;
+                        stop
                     endif
-                    :<color:red>返回 "没有部门权限"</color>;
-                    stop
                 endif
+            else (否)
+                :<color:red>返回 "无权限"</color>;
+                stop
             endif
+        else (否)
+            :<color:red>返回 "无权限"</color>;
+            stop
         endif
     endif
+else (否)
+    :<color:red>返回 "无权限"</color>;
+    stop
 endif
 @enduml
 ```
@@ -614,22 +772,14 @@ stop
 @enduml
 ```
 
-  
-
-
-
-  
-
 ## 5. 总结优势
-
-
 
 
 **PlantUML 的主要优势**：
 1. **高效**：通过简单的文本描述快速生成图表，节省时间。
 2. **灵活**：支持多种 UML 图表，满足多种设计需求。
-3. **易集成**：可以集成到各种 IDE 和工具中。
-4. **版本管理友好**：基于文本格式，方便协作和版本控制。
+3. **易于维护**：基于文本格式，方便版本控制和团队协作。
+4. **集成友好**：支持多种开发工具，提高工作效率。
 5. **结合 AI 提升效率**：与 ChatGPT 和 Copilot 配合使用，可以快速生成所需的图表代码。
 
 PlantUML 是一个强大且灵活的工具，非常适合程序员在设计、开发和文档编写中使用！
