@@ -14,3 +14,4 @@ markdown_extensions:
 nav:
   - 首页: index.md
   - PlantUML分享: PlantUML分享/PlantUML分享.md
+  - MyBatis执行器源码分析: 技术博客/MyBatis执行器源码分析.md
