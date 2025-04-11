@@ -72,7 +72,7 @@
 
 ### 3.1 时序图
 
-#### 3.1.1 多系统对接时，通过plantUML快速生成时序图，提高沟通效率
+多系统对接时，通过plantUML快速生成时序图，提高沟通效率
 ![alt text](image-3.png)
 具体代码如下：
 ```plantuml
@@ -94,7 +94,7 @@ deactivate 中考后端
 end group
 @enduml
 ```
-#### 3.1.2 梳理现有系统的调用关系，通过plantUML生成时序图，方便理解
+
 
 
 ---
@@ -195,7 +195,6 @@ Unarchived -right-> 已转商 : 转商
 
 
 
-@enduml
 ```
 
 ---
@@ -771,6 +770,37 @@ end note
 stop
 @enduml
 ```
+
+```plantuml
+@startuml
+//单点登录流程图
+|单点登录|
+start
+:用户访问应用;
+if (用户未登录?) then (yes)
+    :跳转至登录页;
+    :用户登录;
+    if (登录成功?) then (yes)
+        :生成Token;
+        :写入Cookie;
+        :跳转至应用首页;
+    else (no)
+        :跳转至登录页;
+    endif
+else (no)
+    :验证Token;
+    if (Token有效?) then (yes)
+        :跳转至应用首页;
+    else (no)
+        :跳转至登录页;
+    endif
+endif
+stop
+@enduml
+
+```
+```
+
 
 ## 5. 总结优势
 

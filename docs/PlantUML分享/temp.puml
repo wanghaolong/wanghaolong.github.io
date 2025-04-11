@@ -1,0 +1,19 @@
+@startmindmap
+
+
+skinparam {
+    DefaultBackgroundColor LightGreen
+    FontColor Black
+    ArrowColor DarkGreen
+}
+
+* 主要工作
+
+**[#lightblue] 高并发方案
+
+
+
+
+
+
+@endmindmap
